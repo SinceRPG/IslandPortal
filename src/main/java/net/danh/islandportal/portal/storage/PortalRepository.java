@@ -219,7 +219,13 @@ public final class PortalRepository {
                 section.getStringList("island-members"),
                 section.getStringList("blocks"),
                 section.getStringList("trigger-blocks").isEmpty() ? section.getStringList("blocks") : section.getStringList("trigger-blocks"),
-                section.getStringList("support-blocks")
+                section.getStringList("support-blocks"),
+                section.getString("return.world"),
+                section.getDouble("return.x"),
+                section.getDouble("return.y"),
+                section.getDouble("return.z"),
+                (float) section.getDouble("return.yaw"),
+                (float) section.getDouble("return.pitch")
         );
     }
 
@@ -258,6 +264,12 @@ public final class PortalRepository {
         data.set(path + "blocks", portal.blocks());
         data.set(path + "trigger-blocks", portal.triggerBlocks());
         data.set(path + "support-blocks", portal.supportBlocks());
+        data.set(path + "return.world", portal.returnWorld());
+        data.set(path + "return.x", portal.returnX());
+        data.set(path + "return.y", portal.returnY());
+        data.set(path + "return.z", portal.returnZ());
+        data.set(path + "return.yaw", portal.returnYaw());
+        data.set(path + "return.pitch", portal.returnPitch());
     }
 
     private void clearStalePlayerDataFiles(Set<String> keepFiles) {

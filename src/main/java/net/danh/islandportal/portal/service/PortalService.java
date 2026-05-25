@@ -42,6 +42,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -63,6 +64,8 @@ public final class PortalService implements Listener {
     private final PortalAccessController accessController;
     private final PortalSettingsMenu settingsMenu;
     private final Map<UUID, Long> useCooldowns = new ConcurrentHashMap<>();
+    private final Map<String, Location> returnLocationByIsland = new ConcurrentHashMap<>();
+    private final Map<String, Location> returnLocationByPlayer = new ConcurrentHashMap<>();
     private final Set<String> pendingCreations = ConcurrentHashMap.newKeySet();
     private PlatformTask autoSaveTask;
     private final AtomicBoolean saveDirty = new AtomicBoolean(false);
@@ -73,7 +76,7 @@ public final class PortalService implements Listener {
         this.scheduler = scheduler;
         this.repository = new PortalRepository(plugin, config, this::debug);
         this.itemFactory = new PortalItemFactory(plugin, config);
-        this.islandPlacer = new PortalIslandPlacer(plugin, blockBuilder, this::debug);
+        this.islandPlacer = new PortalIslandPlacer(plugin, blockBuilder, this::debug, scheduler.folia());
         this.accessController = new PortalAccessController(config);
         this.settingsMenu = new PortalSettingsMenu(plugin, config);
         long autosaveTicks = 20L * 60L * config.autosaveIntervalMinutes();
@@ -89,6 +92,7 @@ public final class PortalService implements Listener {
             debug("Skipped default portal for " + islandId + " because no portal type has default-on-island: true.");
             return;
         }
+        rememberIslandReturnLocation(islandId, islandLocation, owner, islandMembers);
         for (PortalType type : config.defaultIslandPortalTypes()) {
             String id = "island:" + islandId + ":" + type.id();
             if (!pendingCreations.add(id) || repository.contains(id)) {
@@ -119,7 +123,7 @@ public final class PortalService implements Listener {
                 return;
             }
             pendingCreations.remove(id);
-            createPortal(id, type, placement.portalBase(), placement.facing(), owner, islandId, true, islandMembers, placement.supportBlocks());
+            createPortal(id, type, placement.portalBase(), placement.facing(), owner, islandId, true, islandMembers, placement.supportBlocks(), islandLocation);
             debug("Created default " + type.id() + " portal for island " + islandId + " at " + locationString(placement.portalBase()) + ".");
         });
     }
@@ -128,6 +132,7 @@ public final class PortalService implements Listener {
         if (!config.enabled()) {
             return;
         }
+        rememberIslandReturnLocation(islandId, islandLocation, owner, islandMembers);
         Player recipient = onlinePlayer(actor);
         if (recipient == null) {
             recipient = onlinePlayer(owner);
@@ -143,10 +148,12 @@ public final class PortalService implements Listener {
         for (ManagedPortal portal : toRemove) {
             PortalType type = config.type(portal.type());
             boolean returnItem = type != null && !portal.defaultPortal() && recipient != null;
-            removeManagedPortal(portal, false);
-            if (returnItem) {
-                giveOrDrop(recipient, createPortalItem(type, 1));
-            }
+            Player itemRecipient = recipient;
+            removeManagedPortalAfterEvacuation(portal, false, islandLocation, () -> {
+                if (returnItem) {
+                    giveOrDrop(itemRecipient, createPortalItem(type, 1));
+                }
+            });
         }
         debug("Cleaned " + toRemove.size() + " portal(s) for removed island " + islandId + ".");
     }
@@ -168,10 +175,14 @@ public final class PortalService implements Listener {
     }
 
     public void createPortal(String id, PortalType type, Location base, BlockFace facing, String owner, String islandId, boolean defaultPortal, List<String> islandMembers, List<String> supportBlocks) {
-        scheduler.runAtLoaded(base, () -> createPortalNow(id, type, base, facing, owner, islandId, defaultPortal, islandMembers, supportBlocks));
+        createPortal(id, type, base, facing, owner, islandId, defaultPortal, islandMembers, supportBlocks, null);
     }
 
-    private void createPortalNow(String id, PortalType type, Location base, BlockFace facing, String owner, String islandId, boolean defaultPortal, List<String> islandMembers, List<String> supportBlocks) {
+    public void createPortal(String id, PortalType type, Location base, BlockFace facing, String owner, String islandId, boolean defaultPortal, List<String> islandMembers, List<String> supportBlocks, Location returnLocation) {
+        scheduler.runAtLoaded(base, () -> createPortalNow(id, type, base, facing, owner, islandId, defaultPortal, islandMembers, supportBlocks, returnLocation));
+    }
+
+    private void createPortalNow(String id, PortalType type, Location base, BlockFace facing, String owner, String islandId, boolean defaultPortal, List<String> islandMembers, List<String> supportBlocks, Location returnLocation) {
         if (base.getWorld() == null) {
             return;
         }
@@ -186,7 +197,7 @@ public final class PortalService implements Listener {
             portalBlocks = includeTrackedSchematicPortalBlocks(type, portalBlocks, supportBlocks);
         }
 
-        ManagedPortal portal = ManagedPortal.of(id, type, base, normalizedFacing.name(), owner, islandId, defaultPortal, islandMembers, portalBlocks.blocks(), portalBlocks.triggerBlocks(), supportBlocks);
+        ManagedPortal portal = ManagedPortal.of(id, type, base, normalizedFacing.name(), owner, islandId, defaultPortal, islandMembers, portalBlocks.blocks(), portalBlocks.triggerBlocks(), supportBlocks, returnLocation);
         repository.add(portal);
         requestSave();
     }
@@ -218,14 +229,26 @@ public final class PortalService implements Listener {
     }
 
     public void createDefaultPortal(String id, PortalType type, Location origin, Player callbackPlayer, Consumer<Boolean> result) {
+        createDefaultPortal(id, type, origin, callbackPlayer, result, null, null, false, List.of());
+    }
+
+    public void createDefaultPortal(String id, PortalType type, Location origin, Player callbackPlayer, Consumer<Boolean> result, String owner, String islandId, boolean defaultPortal, List<String> islandMembers) {
+        createDefaultPortal(id, type, origin, callbackPlayer, result, owner, islandId, defaultPortal, islandMembers, false, origin);
+    }
+
+    public void createDefaultPortal(String id, PortalType type, Location origin, Player callbackPlayer, Consumer<Boolean> result, String owner, String islandId, boolean defaultPortal, List<String> islandMembers, boolean randomizeExactOffset) {
+        createDefaultPortal(id, type, origin, callbackPlayer, result, owner, islandId, defaultPortal, islandMembers, randomizeExactOffset, origin);
+    }
+
+    public void createDefaultPortal(String id, PortalType type, Location origin, Player callbackPlayer, Consumer<Boolean> result, String owner, String islandId, boolean defaultPortal, List<String> islandMembers, boolean randomizeExactOffset, Location returnLocation) {
         scheduler.runAtLoaded(origin, () -> {
             // Manual test placement uses the same region-owned placement path as automatic island creation.
-            DefaultPortalPlacement placement = islandPlacer.place(type, origin);
+            DefaultPortalPlacement placement = islandPlacer.place(type, origin, randomizeExactOffset);
             if (placement == null) {
                 completePlacementResult(callbackPlayer, result, false);
                 return;
             }
-            createPortal(id, type, placement.portalBase(), placement.facing(), null, null, false, List.of(), placement.supportBlocks());
+            createPortal(id, type, placement.portalBase(), placement.facing(), owner, islandId, defaultPortal, islandMembers, placement.supportBlocks(), returnLocation);
             completePlacementResult(callbackPlayer, result, true);
         });
     }
@@ -243,7 +266,9 @@ public final class PortalService implements Listener {
         if (nearest == null) {
             return false;
         }
-        removeManagedPortal(nearest, dropItem);
+        PortalType type = config.type(nearest.type());
+        removeManagedPortalAfterEvacuation(nearest, dropItem, pickupDestination(nearest, type, location), () -> {
+        });
         return true;
     }
 
@@ -255,19 +280,20 @@ public final class PortalService implements Listener {
         if (event.getHand() != EquipmentSlot.HAND || event.getClickedBlock() == null) {
             return;
         }
-        ManagedPortal clickedPortal = portalAt(event.getClickedBlock().getLocation());
+        ManagedPortal clickedPortal = portalIncludingSupportAt(event.getClickedBlock().getLocation());
         if (clickedPortal != null && event.getPlayer().isSneaking() && event.getAction() == Action.LEFT_CLICK_BLOCK) {
             event.setCancelled(true);
             if (!accessController.canPickup(event.getPlayer(), clickedPortal)) {
                 send(event.getPlayer(), message("no-permission-pickup"));
                 return;
             }
-            removeManagedPortal(clickedPortal, false);
             PortalType clickedType = config.type(clickedPortal.type());
-            if (clickedType != null && clickedType.giveItemOnBreak()) {
-                giveOrDrop(event.getPlayer(), createPortalItem(clickedType, 1));
-                send(event.getPlayer(), message("portal-picked-up"));
-            }
+            removeManagedPortalAfterEvacuation(clickedPortal, false, pickupDestination(clickedPortal, clickedType, event.getPlayer()), () -> {
+                if (clickedType != null && clickedType.giveItemOnBreak()) {
+                    giveOrDrop(event.getPlayer(), createPortalItem(clickedType, 1));
+                    send(event.getPlayer(), message("portal-picked-up"));
+                }
+            });
             return;
         }
         if (clickedPortal != null && event.getPlayer().isSneaking() && event.getAction() == Action.RIGHT_CLICK_BLOCK) {
@@ -296,9 +322,28 @@ public final class PortalService implements Listener {
         }
         event.setCancelled(true);
         Location base = event.getClickedBlock().getRelative(event.getBlockFace()).getLocation();
+        if (type.portalIsland().enabled()) {
+            placePortalIslandFromItem(event.getPlayer(), event.getItem(), type, base);
+            return;
+        }
         createPortal("placed:" + UUID.randomUUID(), type, base, event.getPlayer().getFacing(), event.getPlayer().getUniqueId().toString(), null, false, List.of(event.getPlayer().getUniqueId().toString()), List.of());
-        if (type.consumeOnPlace() && event.getPlayer().getGameMode() != GameMode.CREATIVE) {
-            event.getItem().subtract(1);
+        consumePlacedItem(event.getPlayer(), event.getItem(), type);
+    }
+
+    private void placePortalIslandFromItem(Player player, ItemStack item, PortalType type, Location origin) {
+        String playerId = player.getUniqueId().toString();
+        createDefaultPortal("placed-island:" + UUID.randomUUID(), type, origin, player, created -> {
+            if (!created) {
+                send(player, message("portal-island-no-space"));
+                return;
+            }
+            consumePlacedItem(player, item, type);
+        }, playerId, null, false, List.of(playerId), true, player.getLocation().clone());
+    }
+
+    private void consumePlacedItem(Player player, ItemStack item, PortalType type) {
+        if (type.consumeOnPlace() && player.getGameMode() != GameMode.CREATIVE && item != null) {
+            item.subtract(1);
         }
     }
 
@@ -501,6 +546,20 @@ public final class PortalService implements Listener {
         return repository.blockAt(location);
     }
 
+    private ManagedPortal portalIncludingSupportAt(Location location) {
+        ManagedPortal portal = portalAt(location);
+        if (portal != null) {
+            return portal;
+        }
+        String blockKey = key(location);
+        for (ManagedPortal candidate : repository.all()) {
+            if (candidate.supportBlocks().contains(blockKey)) {
+                return candidate;
+            }
+        }
+        return null;
+    }
+
     private ManagedPortal managedPortalAt(Location location) {
         if (location.getWorld() == null) {
             return null;
@@ -574,6 +633,14 @@ public final class PortalService implements Listener {
         requestSave();
     }
 
+    private void removeManagedPortalAfterEvacuation(ManagedPortal portal, boolean dropItem, Location destination, Runnable afterRemoval) {
+        evacuatePlayers(portal, destination);
+        scheduler.runGlobalLater(() -> {
+            removeManagedPortal(portal, dropItem);
+            afterRemoval.run();
+        }, 10L);
+    }
+
     private void removePortalBlocks(ManagedPortal portal, boolean dropItem) {
         for (String blockKey : portal.blocks()) {
             Location location = locationFromKey(blockKey);
@@ -594,8 +661,197 @@ public final class PortalService implements Listener {
         }
     }
 
+    private void evacuatePlayers(ManagedPortal portal, Location destination) {
+        if (destination == null || destination.getWorld() == null || portal.supportBlocks().isEmpty()) {
+            return;
+        }
+        Set<String> affectedBlocks = new HashSet<>();
+        affectedBlocks.addAll(portal.blocks());
+        affectedBlocks.addAll(portal.triggerBlocks());
+        affectedBlocks.addAll(portal.supportBlocks());
+        AffectedBounds bounds = affectedBounds(affectedBlocks);
+        Location safeDestination = safeDestination(destination, affectedBlocks);
+        for (Player player : plugin.getServer().getOnlinePlayers()) {
+            Location location = player.getLocation();
+            if (location.getWorld() == null || !location.getWorld().equals(safeDestination.getWorld())) {
+                continue;
+            }
+            if (!isInsideAffectedArea(location, affectedBlocks, bounds)) {
+                continue;
+            }
+            scheduler.runFor(player, () -> player.teleportAsync(safeDestination));
+        }
+    }
+
+    private boolean isInsideAffectedArea(Location location, Set<String> affectedBlocks, AffectedBounds bounds) {
+        if (affectedBlocks.contains(key(location))) {
+            return true;
+        }
+        if (bounds == null || !bounds.world().equals(location.getWorld().getName())) {
+            return false;
+        }
+        int x = location.getBlockX();
+        int y = location.getBlockY();
+        int z = location.getBlockZ();
+        return x >= bounds.minX() && x <= bounds.maxX()
+                && y >= bounds.minY() && y <= bounds.maxY() + 3
+                && z >= bounds.minZ() && z <= bounds.maxZ();
+    }
+
+    private AffectedBounds affectedBounds(Set<String> blockKeys) {
+        AffectedBounds bounds = null;
+        for (String blockKey : blockKeys) {
+            String[] parts = blockKey.split(":");
+            if (parts.length != 4) {
+                continue;
+            }
+            try {
+                int x = Integer.parseInt(parts[1]);
+                int y = Integer.parseInt(parts[2]);
+                int z = Integer.parseInt(parts[3]);
+                bounds = bounds == null
+                        ? new AffectedBounds(parts[0], x, x, y, y, z, z)
+                        : bounds.include(parts[0], x, y, z);
+            } catch (NumberFormatException ignored) {
+            }
+        }
+        return bounds;
+    }
+
+    private Location pickupDestination(ManagedPortal portal, PortalType type, Player player) {
+        Location destination = pickupDestination(portal, type, player.getLocation());
+        destination.setYaw(player.getLocation().getYaw());
+        destination.setPitch(player.getLocation().getPitch());
+        return destination;
+    }
+
+    private Location pickupDestination(ManagedPortal portal, PortalType type, Location fallback) {
+        Location storedReturn = portal.returnLocation();
+        if (storedReturn != null) {
+            return storedReturn;
+        }
+        Location islandReturn = rememberedReturnLocation(portal);
+        if (islandReturn != null) {
+            return islandReturn;
+        }
+        if (type == null || portal.baseLocation() == null) {
+            return fallback.getWorld() == null ? null : fallback.getWorld().getSpawnLocation();
+        }
+        Location destination = portal.baseLocation().clone();
+        destination.subtract(type.islandOffset());
+        if (type.portalIsland().enabled()) {
+            destination.subtract(type.portalIsland().portalOffset());
+        }
+        return destination;
+    }
+
+    private void rememberIslandReturnLocation(String islandId, Location islandLocation, String owner, List<String> islandMembers) {
+        if (islandLocation == null || islandLocation.getWorld() == null) {
+            return;
+        }
+        Location stored = centered(islandLocation);
+        if (islandId != null && !islandId.isBlank()) {
+            returnLocationByIsland.put(islandId, stored.clone());
+        }
+        if (owner != null && !owner.isBlank()) {
+            returnLocationByPlayer.put(owner, stored.clone());
+        }
+        for (String member : islandMembers) {
+            if (member != null && !member.isBlank()) {
+                returnLocationByPlayer.put(member, stored.clone());
+            }
+        }
+    }
+
+    private Location rememberedReturnLocation(ManagedPortal portal) {
+        if (portal.islandId() != null && !portal.islandId().isBlank()) {
+            Location location = returnLocationByIsland.get(portal.islandId());
+            if (location != null) {
+                return location.clone();
+            }
+        }
+        if (portal.owner() != null && !portal.owner().isBlank()) {
+            Location location = returnLocationByPlayer.get(portal.owner());
+            if (location != null) {
+                return location.clone();
+            }
+        }
+        for (String member : portal.islandMembers()) {
+            Location location = returnLocationByPlayer.get(member);
+            if (location != null) {
+                return location.clone();
+            }
+        }
+        return null;
+    }
+
+    private Location centered(Location location) {
+        Location centered = location.clone();
+        centered.setX(centered.getBlockX() + 0.5);
+        centered.setZ(centered.getBlockZ() + 0.5);
+        return centered;
+    }
+
+    private Location safeDestination(Location location, Set<String> affectedBlocks) {
+        Location safe = nearestSafeStandLocation(location, affectedBlocks);
+        if (safe != null) {
+            return safe;
+        }
+        Location fallback = location.getWorld().getSpawnLocation();
+        fallback.setX(fallback.getBlockX() + 0.5);
+        fallback.setZ(fallback.getBlockZ() + 0.5);
+        return fallback;
+    }
+
+    private Location nearestSafeStandLocation(Location center, Set<String> affectedBlocks) {
+        World world = center.getWorld();
+        if (world == null) {
+            return null;
+        }
+        int baseX = center.getBlockX();
+        int baseY = center.getBlockY();
+        int baseZ = center.getBlockZ();
+        for (int radius = 0; radius <= 64; radius++) {
+            for (int x = -radius; x <= radius; x++) {
+                for (int z = -radius; z <= radius; z++) {
+                    if (Math.max(Math.abs(x), Math.abs(z)) != radius) {
+                        continue;
+                    }
+                    for (int y = baseY + 6; y >= baseY - 24; y--) {
+                        Location candidate = new Location(world, baseX + x + 0.5, y, baseZ + z + 0.5, center.getYaw(), center.getPitch());
+                        if (isSafeStandLocation(candidate, affectedBlocks)) {
+                            return candidate;
+                        }
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    private boolean isSafeStandLocation(Location location, Set<String> affectedBlocks) {
+        World world = location.getWorld();
+        if (world == null) {
+            return false;
+        }
+        int x = location.getBlockX();
+        int y = location.getBlockY();
+        int z = location.getBlockZ();
+        if (affectedBlocks.contains(key(world, x, y - 1, z)) || affectedBlocks.contains(key(world, x, y, z)) || affectedBlocks.contains(key(world, x, y + 1, z))) {
+            return false;
+        }
+        Block feet = world.getBlockAt(x, y, z);
+        Block head = world.getBlockAt(x, y + 1, z);
+        Block ground = world.getBlockAt(x, y - 1, z);
+        return feet.getType().isAir() && head.getType().isAir() && ground.getType().isSolid();
+    }
+
     private String key(Location location) {
         return location.getWorld().getName() + ":" + location.getBlockX() + ":" + location.getBlockY() + ":" + location.getBlockZ();
+    }
+
+    private String key(World world, int x, int y, int z) {
+        return world.getName() + ":" + x + ":" + y + ":" + z;
     }
 
     private Location locationFromKey(String key) {
@@ -630,7 +886,8 @@ public final class PortalService implements Listener {
         ManagedPortal updated = new ManagedPortal(
                 portal.id(), portal.type(), portal.world(), portal.x(), portal.y(), portal.z(), portal.facing(),
                 portal.owner(), portal.islandId(), portal.defaultPortal(), pickupPolicy, usePolicy, configurePolicy,
-                portal.islandMembers(), portal.blocks(), portal.triggerBlocks(), portal.supportBlocks()
+                portal.islandMembers(), portal.blocks(), portal.triggerBlocks(), portal.supportBlocks(),
+                portal.returnWorld(), portal.returnX(), portal.returnY(), portal.returnZ(), portal.returnYaw(), portal.returnPitch()
         );
         repository.remove(updated.id());
         repository.add(updated);
@@ -694,6 +951,24 @@ public final class PortalService implements Listener {
     private void debug(String message) {
         if (config.debug()) {
             plugin.getLogger().info("[Debug] " + message);
+        }
+    }
+
+    private record AffectedBounds(String world, int minX, int maxX, int minY, int maxY, int minZ, int maxZ) {
+
+        private AffectedBounds include(String blockWorld, int x, int y, int z) {
+            if (!world.equals(blockWorld)) {
+                return this;
+            }
+            return new AffectedBounds(
+                    world,
+                    Math.min(minX, x),
+                    Math.max(maxX, x),
+                    Math.min(minY, y),
+                    Math.max(maxY, y),
+                    Math.min(minZ, z),
+                    Math.max(maxZ, z)
+            );
         }
     }
 
