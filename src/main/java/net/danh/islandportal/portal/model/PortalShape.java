@@ -7,6 +7,7 @@ public record PortalShape(
         int height,
         Material frameMaterial,
         Material portalMaterial,
-        boolean replaceOnlyAir
+        boolean replaceOnlyAir,
+        boolean trackOnly
 ) {
 }

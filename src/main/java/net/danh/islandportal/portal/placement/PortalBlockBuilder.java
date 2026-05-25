@@ -30,14 +30,18 @@ public final class PortalBlockBuilder {
             for (int y = 0; y <= shape.height() + 1; y++) {
                 boolean frame = x == 0 || x == shape.width() + 1 || y == 0 || y == shape.height() + 1;
                 Block block = relativeBlock(base, widthFace, x, y);
-                if (shape.replaceOnlyAir() && !block.getType().isAir()) {
+                if (!shape.trackOnly() && shape.replaceOnlyAir() && !block.getType().isAir()) {
                     continue;
                 }
-                if (frame) {
-                    block.setType(shape.frameMaterial(), false);
-                } else {
-                    block.setBlockData(portalData, false);
+                if (!frame) {
                     triggerBlocks.add(key(block.getLocation()));
+                }
+                if (!shape.trackOnly()) {
+                    if (frame) {
+                        block.setType(shape.frameMaterial(), false);
+                    } else {
+                        block.setBlockData(portalData, false);
+                    }
                 }
                 blocks.add(key(block.getLocation()));
             }

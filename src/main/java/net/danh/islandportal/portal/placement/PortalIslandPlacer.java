@@ -47,13 +47,9 @@ public final class PortalIslandPlacer {
             debug.accept("Falling back to generated portal-island platform for " + type.id() + ".");
         }
 
-        Location origin = islandLocation.clone().add(randomizedOffset(type)).getBlock().getLocation();
+        Location origin = placementOrigin(type, islandLocation, settings, null);
         for (Location platformCenter : platformCandidates(origin, settings.searchRadius(), settings.searchStep())) {
             Bounds bounds = platformBounds(platformCenter, type, facing);
-            if (!bounds.insideSingleChunk()) {
-                debug.accept("Skipped portal-island candidate crossing chunk boundaries at " + locationString(platformCenter) + ".");
-                continue;
-            }
             if (!isClear(platformCenter, bounds)) {
                 continue;
             }
@@ -87,13 +83,9 @@ public final class PortalIslandPlacer {
             return null;
         }
 
-        Location origin = islandLocation.clone().add(randomizedOffset(type)).getBlock().getLocation();
+        Location origin = placementOrigin(type, islandLocation, settings, schematic);
         for (Location pasteOrigin : platformCandidates(origin, settings.searchRadius(), settings.searchStep())) {
             Bounds bounds = schematicBounds(pasteOrigin, type, facing, schematic);
-            if (!bounds.insideSingleChunk()) {
-                debug.accept("Skipped schematic portal-island candidate crossing chunk boundaries at " + locationString(pasteOrigin) + ".");
-                continue;
-            }
             if (!isClear(pasteOrigin, bounds)) {
                 continue;
             }
@@ -124,6 +116,16 @@ public final class PortalIslandPlacer {
             }
         }
         return candidates;
+    }
+
+    private Location placementOrigin(PortalType type, Location islandLocation, PortalIslandSettings settings, WorldEditSchematicPaster.LoadedSchematic schematic) {
+        Location origin = islandLocation.clone().add(randomizedOffset(type)).getBlock().getLocation();
+        if (!settings.alignToIslandY()) {
+            return origin;
+        }
+        int anchorY = schematic == null ? 0 : settings.schematicAnchorY();
+        origin.setY(islandLocation.getBlockY() - anchorY + settings.yOffset());
+        return origin.getBlock().getLocation();
     }
 
     private Bounds platformBounds(Location platformCenter, PortalType type, BlockFace facing) {
@@ -231,12 +233,6 @@ public final class PortalIslandPlacer {
     }
 
     private record Bounds(int minX, int maxX, int minY, int maxY, int minZ, int maxZ, int clearance) {
-
-        private boolean insideSingleChunk() {
-            // Folia owns block state by region/chunk. Keeping placement within one chunk guarantees the current RegionScheduler task owns every block it reads or writes.
-            return (minXWithClearance() >> 4) == (maxXWithClearance() >> 4)
-                    && (minZWithClearance() >> 4) == (maxZWithClearance() >> 4);
-        }
 
         private int minXWithClearance() {
             return minX - clearance;

@@ -37,7 +37,7 @@ The plugin writes these files on first start:
 
 Runtime tuning such as autosave interval, vanilla portal cooldown, portal lookup scan radius, command aliases, and integration toggles is in `config.yml`.
 
-Default portal islands can be generated from simple materials or pasted from a WorldEdit/FAWE schematic. The plugin bundles `schematics/spawn_portal_island.schem` as the default schematic. If WorldEdit/FAWE is missing or the schematic cannot be loaded, the plugin falls back to the generated platform mode.
+Default portal islands can be generated from simple materials or pasted from a WorldEdit/FAWE schematic. The plugin bundles sample schematics at `schematics/spawn_portal_island.schem` and `schematics/track_only_portal_island.schem`; production servers can place their own schematic under the plugin data folder and point `portal-island.schematic` to it. If WorldEdit/FAWE is missing or the schematic cannot be loaded, the plugin falls back to the generated platform mode.
 
 ## Documentation
 

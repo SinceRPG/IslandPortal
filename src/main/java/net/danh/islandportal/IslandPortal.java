@@ -25,6 +25,7 @@ public final class IslandPortal extends JavaPlugin {
         saveBundledResource("portals.yml");
         saveBundledResource("menus.yml");
         saveBundledResource("schematics/spawn_portal_island.schem");
+        saveBundledResource("schematics/track_only_portal_island.schem");
 
         portalConfig = new PortalConfig(this);
         platformScheduler = new PlatformScheduler(this);

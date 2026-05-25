@@ -18,6 +18,9 @@ public record PortalIslandSettings(
         int searchStep,
         int clearance,
         String schematic,
-        boolean schematicIgnoreAir
+        boolean schematicIgnoreAir,
+        boolean alignToIslandY,
+        int schematicAnchorY,
+        int yOffset
 ) {
 }

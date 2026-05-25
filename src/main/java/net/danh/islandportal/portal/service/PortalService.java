@@ -182,10 +182,35 @@ public final class PortalService implements Listener {
 
         BlockFace normalizedFacing = blockBuilder.horizontal(facing);
         PortalBlocks portalBlocks = blockBuilder.build(type, base, normalizedFacing);
+        if (type.shape().trackOnly()) {
+            portalBlocks = includeTrackedSchematicPortalBlocks(type, portalBlocks, supportBlocks);
+        }
 
         ManagedPortal portal = ManagedPortal.of(id, type, base, normalizedFacing.name(), owner, islandId, defaultPortal, islandMembers, portalBlocks.blocks(), portalBlocks.triggerBlocks(), supportBlocks);
         repository.add(portal);
         requestSave();
+    }
+
+    private PortalBlocks includeTrackedSchematicPortalBlocks(PortalType type, PortalBlocks portalBlocks, List<String> supportBlocks) {
+        Set<String> blocks = ConcurrentHashMap.newKeySet();
+        blocks.addAll(portalBlocks.blocks());
+        Set<String> triggerBlocks = ConcurrentHashMap.newKeySet();
+        triggerBlocks.addAll(portalBlocks.triggerBlocks());
+        for (String blockKey : supportBlocks) {
+            Location location = locationFromKey(blockKey);
+            if (location == null) {
+                continue;
+            }
+            Block block = location.getBlock();
+            if (block.getType() != type.shape().portalMaterial()) {
+                continue;
+            }
+            // Track-only schematics may already contain the real Nether portal blocks.
+            // Indexing those exact blocks as triggers lets IslandPortal cancel vanilla Nether travel and run the configured custom action.
+            blocks.add(blockKey);
+            triggerBlocks.add(blockKey);
+        }
+        return new PortalBlocks(List.copyOf(blocks), List.copyOf(triggerBlocks));
     }
 
     public void createDefaultPortal(String id, PortalType type, Location origin, Consumer<Boolean> result) {

@@ -349,7 +349,8 @@ public final class PortalConfig {
                     Math.max(1, typeSection.getInt("height", 3)),
                     material(typeSection.getString("frame-material"), Material.OBSIDIAN),
                     material(typeSection.getString("portal-material"), Material.NETHER_PORTAL),
-                    typeSection.getBoolean("replace-only-air", false)
+                    typeSection.getBoolean("replace-only-air", false),
+                    typeSection.getBoolean("track-only", false)
             );
         }
         return new PortalShape(
@@ -357,13 +358,14 @@ public final class PortalConfig {
                 Math.max(1, section.getInt("height", 3)),
                 material(section.getString("frame-material"), Material.OBSIDIAN),
                 material(section.getString("portal-material"), Material.NETHER_PORTAL),
-                section.getBoolean("replace-only-air", false)
+                section.getBoolean("replace-only-air", false),
+                section.getBoolean("track-only", false)
         );
     }
 
     private PortalIslandSettings portalIsland(ConfigurationSection section) {
         if (section == null) {
-            return new PortalIslandSettings(false, PortalIslandMode.PLATFORM, 4, 3, Material.GRASS_BLOCK, Material.DIRT, new Vector(0, 1, 0), 0, 0, false, 48, 6, 3, "", true);
+            return new PortalIslandSettings(false, PortalIslandMode.PLATFORM, 4, 3, Material.GRASS_BLOCK, Material.DIRT, new Vector(0, 1, 0), 0, 0, false, 48, 6, 3, "", true, false, 0, 0);
         }
         return new PortalIslandSettings(
                 section.getBoolean("enabled", false),
@@ -384,7 +386,10 @@ public final class PortalConfig {
                 Math.max(1, section.getInt("search-step", 6)),
                 Math.max(0, section.getInt("clearance", 3)),
                 section.getString("schematic", ""),
-                section.getBoolean("schematic-ignore-air", true)
+                section.getBoolean("schematic-ignore-air", true),
+                section.getBoolean("vertical-align.enabled", false),
+                section.getInt("vertical-align.schematic-anchor-y", 0),
+                section.getInt("vertical-align.y-offset", 0)
         );
     }
 

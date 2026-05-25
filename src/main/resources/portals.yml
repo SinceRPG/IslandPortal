@@ -33,6 +33,11 @@ portal-types:
       frame-material: OBSIDIAN
       portal-material: NETHER_PORTAL
       replace-only-air: false
+      # false: plugin builds frame and portal blocks after the island schematic is pasted.
+      # true: schematic already contains the exact custom frame and portal blocks; plugin only tracks the area.
+      # When true, all schematic support blocks matching portal-material are also tracked as triggers,
+      # so NETHER_PORTAL blocks inside the schematic run this custom portal instead of vanilla Nether travel.
+      track-only: false
 
     # Base offset from the skyblock island location when portal-island is disabled
     # or before random portal-island distance is added.
@@ -53,8 +58,24 @@ portal-types:
       # SCHEMATIC pastes a WorldEdit/FAWE schematic from the plugin data folder,
       # then creates and tracks the managed portal at portal-offset.
       mode: SCHEMATIC
+      # Put your own schematic under plugins/IslandPortal/schematics and point this path to it.
+      # Example: "schematics/my_custom_portal_island.schem"
+      # Bundled track-only sample: "schematics/track_only_portal_island.schem"
+      # For that sample use portal.track-only: true, portal-offset x: 6 y: 5 z: 3,
+      # and vertical-align.schematic-anchor-y: 4.
       schematic: "schematics/spawn_portal_island.schem"
       schematic-ignore-air: true
+      # Aligns a chosen Y level inside the schematic with the main island Y.
+      # Use this when a custom schematic was copied from its bottom or from a high origin
+      # and appears above or below the normal island.
+      vertical-align:
+        enabled: true
+        # Relative Y inside the schematic that should become level with the island location.
+        # If the schematic was copied with its walking surface at the origin, keep 0.
+        # If the schematic origin is at the bottom and the surface is 8 blocks above it, set 8.
+        schematic-anchor-y: 0
+        # Extra final adjustment after alignment. Negative lowers the portal island.
+        y-offset: 0
       # PLATFORM mode options. These are also used as fallback when SCHEMATIC
       # cannot run because WorldEdit/FAWE is missing or the file is invalid.
       platform-radius: 4
@@ -70,11 +91,11 @@ portal-types:
       # Adds a random radial offset to island-offset before scanning candidates.
       random-distance:
         min: 0
-        max: 12
-      random-facing: true
+        max: 0
+      random-facing: false
       # The scan walks outward from the origin by search-step blocks until
-      # search-radius is reached. Folia-safe candidates that cross chunk
-      # boundaries are skipped automatically.
+      # search-radius is reached. Set both random-distance values to 0 and
+      # search-radius to 0 for an exact custom schematic placement.
       search-radius: 48
       search-step: 6
       clearance: 3
