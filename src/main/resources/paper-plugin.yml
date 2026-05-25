@@ -1,0 +1,21 @@
+name: IslandPortal
+version: '${version}'
+main: net.danh.islandportal.IslandPortal
+api-version: '26.1.2'
+load: POSTWORLD
+folia-supported: true
+authors: [ VoChiDanh ]
+dependencies:
+  server:
+    BentoBox:
+      load: AFTER
+      required: false
+    SuperiorSkyblock2:
+      load: AFTER
+      required: false
+    Skyllia:
+      load: AFTER
+      required: false
+permissions:
+  islandportal.admin:
+    default: op

@@ -1,0 +1,33 @@
+# All player-facing text is configured here.
+# MiniMessage is supported for messages sent by portal interactions.
+# Command messages are plain text because Paper command senders can include console.
+reloaded: "IslandPortal config reloaded."
+players-only: "Only players can use this command."
+unknown-type: "Unknown portal type."
+target-updated: "Target updated for portal type %type%."
+give-usage: "Usage: /islandportal give <type> <player> [amount]"
+player-not-found: "Player not found."
+item-given: "Gave %amount% %type% portal item(s) to %player%."
+portal-created: "Created %type% portal at your current block."
+portal-island-created: "Created %type% portal island near you."
+portal-island-no-space: "Could not find enough empty space for a portal island nearby."
+nearest-removed: "Nearest managed portal removed."
+nearest-not-found: "No managed portal found nearby."
+no-permission-place: "<red>You cannot place this portal."
+no-permission-use: "<red>You cannot use this portal."
+no-permission-pickup: "<red>You cannot pick up this portal."
+no-permission-configure: "<red>You cannot configure this portal."
+portal-picked-up: "<green>Portal picked up."
+break-use-sneak: "<yellow>Shift left-click the portal to pick it up. Shift right-click to configure it."
+target-world-missing: "<red>Portal target world is not loaded."
+
+# Help lines printed by /islandportal help and /ip.
+help:
+  header: "IslandPortal commands:"
+  reload: "/ip reload - reload config"
+  settarget: "/ip settarget <type> - set teleport target to your current location"
+  give: "/ip give <type> <player> [amount] - give portal item"
+  create: "/ip create <type> - create portal at your current block"
+  createisland: "/ip createisland <type> - test default portal-island placement near you"
+  remove: "/ip remove - remove nearest managed portal"
+  pickup: "Shift left-click to pick up. Shift right-click to configure pickup/use/menu access policies."

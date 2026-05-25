@@ -1,0 +1,135 @@
+# The portal type used by /islandportal give when no better fallback exists.
+default-portal-type: spawn
+
+# Available access policy values:
+# OWNER          - only the player who placed/owns this portal
+# ISLAND_OWNER   - currently treated as the stored island owner
+# ISLAND_MEMBERS - owner and stored island members
+# ANYONE         - every player, still limited by permission nodes below
+#
+# Permission fields are optional. Leave a field empty to skip that permission check.
+# When a permission is set, the player must have it before the policy is checked.
+portal-types:
+  spawn:
+    # The item players receive and place. This supports configurable item meta.
+    item:
+      material: NETHER_STAR
+      display-name: "<aqua>Spawn Portal"
+      lore:
+        - "<gray>Place this on your island."
+        - "<dark_gray>Shift right-click to configure."
+        - "<dark_gray>Shift left-click to pick up."
+      custom-model-data: 0
+      unbreakable: false
+      enchantment-glint: true
+      item-flags:
+        - HIDE_ATTRIBUTES
+        - HIDE_UNBREAKABLE
+
+    # Portal frame and trigger area. width/height are the inside portal size.
+    portal:
+      width: 2
+      height: 3
+      frame-material: OBSIDIAN
+      portal-material: NETHER_PORTAL
+      replace-only-air: false
+
+    # Base offset from the skyblock island location when portal-island is disabled
+    # or before random portal-island distance is added.
+    island-offset:
+      x: 16
+      y: 0
+      z: 0
+
+    # Fallback direction for default portals when random-facing is false.
+    island-facing: SOUTH
+
+    # Creates a small separate island for the default portal.
+    # The placer scans nearby locations and only uses an area that is fully clear,
+    # which helps avoid overlapping schematics that already contain side islands.
+    portal-island:
+      enabled: true
+      platform-radius: 4
+      dirt-depth: 3
+      top-material: GRASS_BLOCK
+      fill-material: DIRT
+      portal-offset:
+        x: -1
+        y: 1
+        z: 0
+      random-distance:
+        min: 0
+        max: 12
+      random-facing: true
+      search-radius: 48
+      search-step: 6
+      clearance: 3
+
+    # If true, this portal type is automatically created for newly created islands.
+    default-on-island: true
+
+    # If true, placing this portal consumes one item unless the player is in creative.
+    consume-on-place: true
+
+    # If true, picking up or admin-removing this portal can return its item.
+    give-item-on-break: true
+
+    # Default per-portal policies. Players can change them in the GUI if allowed.
+    default-pickup-policy: ISLAND_MEMBERS
+    default-use-policy: ISLAND_MEMBERS
+    default-configure-policy: OWNER
+
+    permissions:
+      place: ""
+      use: ""
+      pickup: ""
+      configure: ""
+
+    # TELEPORT uses the target section. COMMANDS runs every command as console.
+    # Command placeholders: %player%
+    action:
+      mode: TELEPORT
+      target:
+        world: world
+        x: 0.5
+        y: 100.0
+        z: 0.5
+        yaw: 0.0
+        pitch: 0.0
+
+  crates:
+    item:
+      material: ENDER_EYE
+      display-name: "<gold>Crates Portal"
+      lore:
+        - "<gray>Fast teleport to crates."
+      custom-model-data: 0
+      unbreakable: false
+      enchantment-glint: false
+      item-flags: []
+    portal:
+      width: 2
+      height: 3
+      frame-material: CRYING_OBSIDIAN
+      portal-material: NETHER_PORTAL
+      replace-only-air: false
+    island-offset:
+      x: 6
+      y: 0
+      z: 0
+    island-facing: SOUTH
+    default-on-island: false
+    consume-on-place: true
+    give-item-on-break: true
+    default-pickup-policy: OWNER
+    default-use-policy: ISLAND_MEMBERS
+    default-configure-policy: OWNER
+    permissions:
+      place: "islandportal.portal.crates.place"
+      use: "islandportal.portal.crates.use"
+      pickup: "islandportal.portal.crates.pickup"
+      configure: "islandportal.portal.crates.configure"
+    action:
+      mode: COMMANDS
+      commands:
+        - "warp crates %player%"

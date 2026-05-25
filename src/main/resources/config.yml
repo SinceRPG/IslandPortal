@@ -1,0 +1,38 @@
+# Master switch for the plugin. Set to false to stop all portal handling without removing data.
+enabled: true
+
+# Prints internal placement, cleanup, and migration details to the console.
+# Keep this disabled on production unless you are diagnosing portal creation.
+debug: false
+
+# Compatibility/runtime integration settings.
+hooks:
+  bentobox: true
+  superior-skyblock: true
+  skyllia: true
+
+commands:
+  description: "Manage island portals"
+  aliases:
+    - ip
+
+runtime:
+  # Autosaves dirty in-memory portal data to playerdata every N minutes.
+  autosave-interval-minutes: 10
+  # Prevents vanilla Nether travel while a player is inside a managed portal.
+  vanilla-portal-cooldown-ticks: 200
+  # Per-player managed portal action cooldown.
+  use-cooldown-millis: 1000
+  # Nearby lookup radius used when vanilla portal events report a shifted position.
+  portal-near-scan:
+    horizontal: 2
+    below: 1
+    above: 2
+
+# How long to wait after a skyblock island-create event before placing default portals.
+# Use this when the island plugin still needs a few ticks to paste schematics or finish hooks.
+creation-delay-ticks: 60
+
+# Radius used during island deletion cleanup when an exact island id is not available.
+# Any managed portal near the deleted island center inside this radius can be cleaned up.
+island-cleanup-radius: 100
