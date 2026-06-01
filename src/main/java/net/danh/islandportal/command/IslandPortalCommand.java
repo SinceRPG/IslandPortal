@@ -11,6 +11,9 @@ import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import io.papermc.paper.plugin.lifecycle.event.registrar.ReloadableRegistrarEvent;
 import net.danh.islandportal.IslandPortal;
+import net.danh.islandportal.npc.config.IslandNpcConfig;
+import net.danh.islandportal.npc.model.NpcType;
+import net.danh.islandportal.npc.service.IslandNpcService;
 import net.danh.islandportal.portal.config.PortalConfig;
 import net.danh.islandportal.portal.service.PortalService;
 import net.danh.islandportal.portal.model.PortalType;
@@ -21,6 +24,7 @@ import org.bukkit.entity.Player;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 public final class IslandPortalCommand {
@@ -28,11 +32,15 @@ public final class IslandPortalCommand {
     private final IslandPortal plugin;
     private final PortalConfig config;
     private final PortalService portalService;
+    private final IslandNpcConfig npcConfig;
+    private final IslandNpcService npcService;
 
-    public IslandPortalCommand(IslandPortal plugin, PortalConfig config, PortalService portalService) {
+    public IslandPortalCommand(IslandPortal plugin, PortalConfig config, PortalService portalService, IslandNpcConfig npcConfig, IslandNpcService npcService) {
         this.plugin = plugin;
         this.config = config;
         this.portalService = portalService;
+        this.npcConfig = npcConfig;
+        this.npcService = npcService;
     }
 
     public void register(ReloadableRegistrarEvent<Commands> event) {
@@ -61,6 +69,15 @@ public final class IslandPortalCommand {
                         .then(Commands.argument("type", StringArgumentType.word())
                                 .suggests(this::suggestPortalTypes)
                                 .executes(this::createIsland)))
+                .then(Commands.literal("npc")
+                        .then(Commands.literal("spawn")
+                                .then(Commands.argument("type", StringArgumentType.word())
+                                        .suggests(this::suggestNpcTypes)
+                                        .executes(this::spawnNpc)
+                                        .then(Commands.argument("id", StringArgumentType.word())
+                                                .executes(this::spawnNpc))))
+                        .then(Commands.literal("remove")
+                                .executes(this::removeNpc)))
                 .then(Commands.literal("remove").executes(this::remove))
                 .executes(this::usage);
 
@@ -82,6 +99,7 @@ public final class IslandPortalCommand {
                 config.message("help.give"),
                 config.message("help.create"),
                 config.message("help.createisland"),
+                config.message("help.npc"),
                 config.message("help.remove"),
                 config.message("help.pickup")
         )) {
@@ -191,6 +209,39 @@ public final class IslandPortalCommand {
         return removed ? Command.SINGLE_SUCCESS : 0;
     }
 
+    private int spawnNpc(CommandContext<CommandSourceStack> context) {
+        CommandSender sender = sender(context);
+        Player player = player(sender);
+        if (player == null) {
+            sender.sendMessage(config.message("players-only"));
+            return 0;
+        }
+        NpcType type = npcConfig.type(StringArgumentType.getString(context, "type"));
+        if (type == null) {
+            sender.sendMessage(config.message("unknown-npc-type"));
+            return 0;
+        }
+        String id = context.getNodes().stream().anyMatch(node -> node.getNode().getName().equals("id"))
+                ? StringArgumentType.getString(context, "id")
+                : "manual:" + UUID.randomUUID();
+        Location location = player.getLocation();
+        boolean created = npcService.createManualNpc(id, type, location, player);
+        sender.sendMessage(created ? config.message("npc-created").replace("%type%", type.id()).replace("%id%", id) : config.message("npc-create-failed"));
+        return created ? Command.SINGLE_SUCCESS : 0;
+    }
+
+    private int removeNpc(CommandContext<CommandSourceStack> context) {
+        CommandSender sender = sender(context);
+        Player player = player(sender);
+        if (player == null) {
+            sender.sendMessage(config.message("players-only"));
+            return 0;
+        }
+        boolean removed = npcService.removeNearest(player.getLocation(), 6);
+        sender.sendMessage(removed ? config.message("npc-removed") : config.message("npc-not-found"));
+        return removed ? Command.SINGLE_SUCCESS : 0;
+    }
+
     private int usage(CommandContext<CommandSourceStack> context) {
         return help(context);
     }
@@ -210,6 +261,16 @@ public final class IslandPortalCommand {
         for (Player player : Bukkit.getOnlinePlayers()) {
             if (player.getName().toLowerCase(Locale.ROOT).startsWith(prefix)) {
                 builder.suggest(player.getName());
+            }
+        }
+        return builder.buildFuture();
+    }
+
+    private CompletableFuture<Suggestions> suggestNpcTypes(CommandContext<CommandSourceStack> context, SuggestionsBuilder builder) {
+        String prefix = builder.getRemainingLowerCase();
+        for (NpcType type : npcConfig.npcTypes()) {
+            if (type.id().toLowerCase(Locale.ROOT).startsWith(prefix)) {
+                builder.suggest(type.id());
             }
         }
         return builder.buildFuture();

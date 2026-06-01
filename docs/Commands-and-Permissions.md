@@ -1,45 +1,84 @@
 # Commands and Permissions
 
-IslandPortal keeps its command structure simple but powerful. 
+IslandPortal keeps one admin permission and uses per-type configuration for portal and NPC behavior.
 
 ---
 
-## 🛡️ Administrative Permission
-
-To access administrative commands, players or groups need the following permission node:
+## Administrative Permission
 
 ```text
 islandportal.admin
 ```
 
+Players with this permission can use `/islandportal` and `/ip` administrative commands.
+
 ---
 
-## ⌨️ Commands
+## Commands
 
-By default, the main command is `/islandportal` (aliased to `/ip` via `config.yml`).
+By default, the main command is `/islandportal` and the alias is `/ip`.
 
 | Command | Description |
 |---------|-------------|
-| `/ip help` | Shows the help menu with all available commands. |
-| `/ip reload` | Reloads all configuration files seamlessly. |
-| `/ip settarget <type>` | Sets the teleport target for a specific portal type to your current location. |
-| `/ip give <type> <player> [amount]` | Gives the specified portal item to a player. |
-| `/ip create <type>` | Force creates a managed portal of the given type at your location. |
-| `/ip createisland <type>` | Force creates a full portal island of the given type at your location. |
-| `/ip remove` | Removes the managed portal you are currently looking at. |
+| `/ip help` | Shows the help menu. |
+| `/ip reload` | Reloads plugin configuration files. |
+| `/ip settarget <type>` | Sets a portal type's teleport target to your current location. |
+| `/ip give <type> <player> [amount]` | Gives portal items to a player. |
+| `/ip create <type>` | Creates a managed portal at your current block. |
+| `/ip createisland <type>` | Creates a test portal island near your current location. |
+| `/ip remove` | Removes the nearest managed portal. |
+| `/ip npc spawn <type> [id]` | Spawns a managed NPC at your current location. |
+| `/ip npc remove` | Removes the nearest managed NPC. |
 
 ---
 
-## 🔑 Portal Specific Permissions
+## Portal-Specific Permissions
 
-Beyond administrative commands, each individual **Portal Type** can define unique permission nodes in `portals.yml`. 
+Each portal type can define its own permission nodes in `portals.yml`.
 
-You can restrict who can do what with specific portal types:
+```yaml
+permissions:
+  place: "islandportal.portal.spawn.place"
+  use: "islandportal.portal.spawn.use"
+  pickup: "islandportal.portal.spawn.pickup"
+  configure: "islandportal.portal.spawn.configure"
+```
 
-- `place`: Permission to place the portal item and generate the portal.
-- `use`: Permission to trigger the portal action (teleport/command).
-- `pickup`: Permission to break the portal and pick it back up.
-- `configure`: Permission to open the portal's settings GUI.
+Fields:
 
-!!! info "Disabling Permission Checks"
-    If you leave a permission string empty (`""`) in `portals.yml`, the plugin will bypass the check and allow everyone to perform that action.
+- `place`: Required to place the portal item.
+- `use`: Required to trigger the portal action.
+- `pickup`: Required to pick the portal back up.
+- `configure`: Required to open the portal settings menu.
+
+!!! info "Empty permissions"
+    Leave a permission value empty (`""`) to disable that specific permission check.
+
+---
+
+## IslandNPC Permissions and Unlocks
+
+NPC admin commands use:
+
+```text
+islandportal.admin
+```
+
+Automatic island NPC unlocks are configured per NPC type in `npcs.yml`.
+
+```yaml
+unlock:
+  default-unlocked: false
+  permissions:
+    - islandportal.npc.blacksmith
+  min-island-members: 2
+```
+
+Fields:
+
+- `default-unlocked`: Allows the NPC to spawn without extra requirements.
+- `permissions`: Requires the island owner or an online island member to have at least one listed permission.
+- `min-island-members`: Requires the island member count to be at least this value.
+
+!!! note "Unlock timing"
+    Unlock checks run when IslandPortal handles island creation. Permission-based unlocks require the owner or member to be online at that moment.

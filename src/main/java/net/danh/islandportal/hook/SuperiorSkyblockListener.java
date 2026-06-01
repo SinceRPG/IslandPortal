@@ -5,6 +5,7 @@ import com.bgsoftware.superiorskyblock.api.events.IslandWorldResetEvent;
 import com.bgsoftware.superiorskyblock.api.events.PostIslandCreateEvent;
 import com.bgsoftware.superiorskyblock.api.island.Island;
 import com.bgsoftware.superiorskyblock.api.world.Dimension;
+import net.danh.islandportal.npc.service.IslandNpcService;
 import net.danh.islandportal.portal.service.PortalService;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -17,9 +18,11 @@ import java.util.List;
 public final class SuperiorSkyblockListener implements Listener {
 
     private final PortalService portalService;
+    private final IslandNpcService npcService;
 
-    public SuperiorSkyblockListener(PortalService portalService) {
+    public SuperiorSkyblockListener(PortalService portalService, IslandNpcService npcService) {
         this.portalService = portalService;
+        this.npcService = npcService;
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -29,20 +32,29 @@ public final class SuperiorSkyblockListener implements Listener {
         if (location == null) {
             location = island.getCenter(Dimension.getByName(World.Environment.NORMAL.name()));
         }
-        portalService.handleIslandCreated("superior:" + island.getUniqueId(), location, owner(island), members(island));
+        String islandId = "superior:" + island.getUniqueId();
+        List<String> islandMembers = members(island);
+        portalService.handleIslandCreated(islandId, location, owner(island), islandMembers);
+        npcService.handleIslandCreated(islandId, location, owner(island), islandMembers);
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onIslandDisband(IslandDisbandEvent event) {
         Island island = event.getIsland();
-        portalService.handleIslandRemoved("superior:" + island.getUniqueId(), location(island), event.getPlayer().getUniqueId().toString(), owner(island), members(island));
+        Location location = location(island);
+        String islandId = "superior:" + island.getUniqueId();
+        portalService.handleIslandRemoved(islandId, location, event.getPlayer().getUniqueId().toString(), owner(island), members(island));
+        npcService.handleIslandRemoved(islandId, location);
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onIslandWorldReset(IslandWorldResetEvent event) {
         Island island = event.getIsland();
         String actor = event.getPlayer() == null ? null : event.getPlayer().getUniqueId().toString();
-        portalService.handleIslandRemoved("superior:" + island.getUniqueId(), location(island), actor, owner(island), members(island));
+        Location location = location(island);
+        String islandId = "superior:" + island.getUniqueId();
+        portalService.handleIslandRemoved(islandId, location, actor, owner(island), members(island));
+        npcService.handleIslandRemoved(islandId, location);
     }
 
     private Location location(Island island) {

@@ -1,5 +1,6 @@
 package net.danh.islandportal.hook;
 
+import net.danh.islandportal.npc.service.IslandNpcService;
 import net.danh.islandportal.portal.service.PortalService;
 import org.bukkit.Location;
 import org.bukkit.event.EventHandler;
@@ -17,9 +18,11 @@ import java.util.UUID;
 public final class BentoBoxListener implements Listener {
 
     private final PortalService portalService;
+    private final IslandNpcService npcService;
 
-    public BentoBoxListener(PortalService portalService) {
+    public BentoBoxListener(PortalService portalService, IslandNpcService npcService) {
         this.portalService = portalService;
+        this.npcService = npcService;
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -28,7 +31,11 @@ public final class BentoBoxListener implements Listener {
         if (island == null) {
             return;
         }
-        portalService.handleIslandCreated("bentobox:" + island.getUniqueId(), islandLocation(island, event.getLocation()), uuid(island.getOwner()), members(island));
+        Location location = islandLocation(island, event.getLocation());
+        String islandId = "bentobox:" + island.getUniqueId();
+        List<String> islandMembers = members(island);
+        portalService.handleIslandCreated(islandId, location, uuid(island.getOwner()), islandMembers);
+        npcService.handleIslandCreated(islandId, location, uuid(island.getOwner()), islandMembers);
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -37,21 +44,31 @@ public final class BentoBoxListener implements Listener {
         if (island == null) {
             return;
         }
-        portalService.handleIslandCreated("bentobox:" + island.getUniqueId(), islandLocation(island, event.getLocation()), uuid(island.getOwner()), members(island));
+        Location location = islandLocation(island, event.getLocation());
+        String islandId = "bentobox:" + island.getUniqueId();
+        List<String> islandMembers = members(island);
+        portalService.handleIslandCreated(islandId, location, uuid(island.getOwner()), islandMembers);
+        npcService.handleIslandCreated(islandId, location, uuid(island.getOwner()), islandMembers);
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onIslandDelete(IslandDeleteEvent event) {
         Island island = event.getIsland();
         if (island != null) {
-            portalService.handleIslandRemoved("bentobox:" + island.getUniqueId(), islandLocation(island, event.getLocation()), uuid(event.getPlayerUUID()), uuid(island.getOwner()), members(island));
+            Location location = islandLocation(island, event.getLocation());
+            String islandId = "bentobox:" + island.getUniqueId();
+            portalService.handleIslandRemoved(islandId, location, uuid(event.getPlayerUUID()), uuid(island.getOwner()), members(island));
+            npcService.handleIslandRemoved(islandId, location);
         }
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onIslandReset(IslandResetEvent event) {
         Island island = event.getOldIsland();
-        portalService.handleIslandRemoved("bentobox:" + island.getUniqueId(), islandLocation(island, event.getLocation()), uuid(event.getPlayerUUID()), uuid(island.getOwner()), members(island));
+        Location location = islandLocation(island, event.getLocation());
+        String islandId = "bentobox:" + island.getUniqueId();
+        portalService.handleIslandRemoved(islandId, location, uuid(event.getPlayerUUID()), uuid(island.getOwner()), members(island));
+        npcService.handleIslandRemoved(islandId, location);
     }
 
     private Location islandLocation(Island island, Location eventLocation) {

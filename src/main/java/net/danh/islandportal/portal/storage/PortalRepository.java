@@ -55,7 +55,7 @@ public final class PortalRepository {
         for (ManagedPortal portal : portalsById.values()) {
             String ownerKey = portal.owner() == null || portal.owner().isBlank() ? "" : portal.owner();
             String fileName = fileNameByOwner.computeIfAbsent(ownerKey, ignored -> dataFileName(portal));
-            YamlConfiguration data = groupedData.computeIfAbsent(fileName, ignored -> new YamlConfiguration());
+            YamlConfiguration data = groupedData.computeIfAbsent(fileName, this::loadExisting);
             savePortalTo(data, portal);
         }
         Set<String> savedFiles = ConcurrentHashMap.newKeySet();
@@ -69,7 +69,7 @@ public final class PortalRepository {
             }
         }
         if (savedFiles.size() == groupedData.size()) {
-            clearStalePlayerDataFiles(savedFiles);
+            clearStalePortalSections(savedFiles);
         }
     }
 
@@ -272,7 +272,14 @@ public final class PortalRepository {
         data.set(path + "return.pitch", portal.returnPitch());
     }
 
-    private void clearStalePlayerDataFiles(Set<String> keepFiles) {
+    private YamlConfiguration loadExisting(String fileName) {
+        File file = new File(playerDataFolder, fileName);
+        YamlConfiguration data = file.exists() ? YamlConfiguration.loadConfiguration(file) : new YamlConfiguration();
+        data.set("portals", null);
+        return data;
+    }
+
+    private void clearStalePortalSections(Set<String> keepFiles) {
         File[] files = playerDataFolder.listFiles((dir, name) -> name.endsWith(".yml"));
         if (files == null) {
             return;
@@ -281,8 +288,15 @@ public final class PortalRepository {
             if (keepFiles.contains(file.getName())) {
                 continue;
             }
-            if (!file.delete()) {
-                debug.accept("Could not clear stale playerdata file " + file.getName() + ".");
+            YamlConfiguration data = YamlConfiguration.loadConfiguration(file);
+            if (!data.isConfigurationSection("portals")) {
+                continue;
+            }
+            data.set("portals", null);
+            try {
+                data.save(file);
+            } catch (IOException exception) {
+                debug.accept("Could not clear stale portal data in playerdata/" + file.getName() + ": " + exception.getMessage());
             }
         }
     }

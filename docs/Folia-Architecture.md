@@ -21,7 +21,7 @@ All task dispatch goes through the abstract `PlatformScheduler`. This ensures th
 ## 🛡️ Thread Safety Models
 
 ### Entity Safety
-Player inventories, GUI interactions, message callbacks, and portal cooldown changes are strictly scheduled through `runFor`. This ensures all entity-owned states remain safely confined to the entity scheduler.
+Player inventories, GUI interactions, message callbacks, portal cooldown changes, NPC look-at-player rotation, NPC movement, NPC removal, and NPC respawn entity updates are scheduled through entity-aware execution paths. This keeps entity-owned state confined to the correct scheduler.
 
 ### Block Safety
 Portal block placement, portal island generation, schematic pasting, and island cleanup are all scheduled through `runAtLoaded`. 
@@ -31,4 +31,4 @@ Furthermore, portal island placement explicitly **rejects candidates whose full 
 Portal teleport actions use the native `teleportAsync` API. Any failure messages are dispatched in the completion callback back through the player's entity scheduler.
 
 ### Storage Safety
-Portal state is held in fast concurrent maps. The autosave routine uses an atomic dirty flag and ensures all file I/O operations are strictly performed asynchronously.
+Portal and NPC state are held in fast concurrent maps. The autosave routines use dirty flags and preserve separate data sections when portal and NPC data share the same owner file.

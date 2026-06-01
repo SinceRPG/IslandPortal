@@ -1,0 +1,54 @@
+# IslandNPC definitions.
+# Each npc-type can be spawned manually with /ip npc spawn <type> [id].
+# If default-on-island is true, it is placed at island location + island-offset when a supported island plugin creates an island.
+npc-types:
+  guide:
+    entity-type: VILLAGER
+    name: "<gold>Island Guide"
+    name-visible: true
+    profession: LIBRARIAN
+    baby: false
+    glowing: false
+    silent: true
+    invulnerable: true
+    collidable: false
+    default-on-island: true
+    island-offset:
+      x: 2.5
+      y: 1.0
+      z: 2.5
+    # If the offset is blocked, IslandNPC scans nearby blocks and picks a safe stand location automatically.
+    spawn-search:
+      enabled: true
+      horizontal-radius: 8
+      vertical-radius: 6
+      step: 1
+    yaw: 180
+    pitch: 0
+    look-at-player:
+      enabled: true
+      radius: 8
+    movement:
+      # Keeps the NPC wandering around its saved spawn anchor without relying on vanilla AI.
+      enabled: true
+      radius: 4
+      interval-ticks: 20
+      step-distance: 0.35
+      target-attempts: 12
+    unlock:
+      # If false, at least one configured requirement below must pass while the island owner/member is online.
+      default-unlocked: true
+      permissions: []
+      min-island-members: 0
+    interactions:
+      left-click:
+        messages:
+          - "<yellow>%npc%<gray>: <white>Left click actions are fully configurable in npcs.yml."
+        player-commands: []
+        console-commands: []
+      right-click:
+        messages:
+          - "<yellow>%npc%<gray>: <white>Welcome to your island, %player%."
+        player-commands: []
+        console-commands:
+          - "say %player% talked to the island guide."

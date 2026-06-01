@@ -53,6 +53,7 @@ nav:
   - Configuration: Configuration.md
   - Commands & Permissions: Commands-and-Permissions.md
   - Features:
+    - Island NPCs: IslandNPC.md
     - Schematic Portals: Schematic-Portal-Islands.md
     - Storage & Cleanup: Storage-and-Cleanup.md
   - Advanced:

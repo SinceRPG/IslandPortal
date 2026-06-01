@@ -1,43 +1,112 @@
 # Troubleshooting
 
-If things aren't working as expected, check the common issues below.
+If something is not working as expected, check the sections below.
 
 ---
 
-## ❌ Portal Island Does Not Spawn
+## Portal Island Does Not Spawn
 
-If a new island is created but the portal island doesn't appear:
+If a new island is created but the portal island does not appear:
 
-1. **Check the Debug Log:** Set `debug: true` in your `config.yml` and restart. The console will print exactly why placement fails.
-2. **Missing Dependencies:** Ensure **WorldEdit** or **FastAsyncWorldEdit (FAWE)** is installed if you are using `mode: SCHEMATIC`.
-3. **Missing File:** Verify the `.schem` file exists under the `plugins/IslandPortal/schematics/` folder.
-4. **Not Enough Space:** The candidate area might not have enough air clearance to paste the schematic.
-5. **Skyblock Paste Delay:** Your skyblock plugin might be taking too long to paste its own island. Try increasing `creation-delay-ticks`, `creation-retry-attempts`, and `creation-retry-delay-ticks` in `config.yml`.
-
----
-
-## ❌ Portal Does Not Teleport
-
-If players walk into a portal but nothing happens:
-
-1. **Check Action Mode:** Verify `action.mode` is set to `TELEPORT` in `portals.yml`.
-2. **World Not Loaded:** Ensure the `action.target.world` exists and is loaded.
-3. **Permissions & Policies:** Ensure the player has the correct permission node and passes the portal's access policy settings.
+1. Set `debug: true` in `config.yml` and restart.
+2. Ensure WorldEdit or FastAsyncWorldEdit is installed if the portal type uses `mode: SCHEMATIC`.
+3. Verify the `.schem` file exists under `plugins/IslandPortal/schematics/`.
+4. Check whether the candidate area has enough air clearance.
+5. Increase `creation-delay-ticks`, `creation-retry-attempts`, and `creation-retry-delay-ticks` if the skyblock plugin pastes islands slowly.
 
 ---
 
-## 🔥 Vanilla Nether Travel Happens Instead
+## Portal Does Not Teleport
 
-If a custom portal sends players to the actual Nether instead of the configured target:
+Check:
 
-1. **Increase Cooldown:** Increase `runtime.vanilla-portal-cooldown-ticks` in `config.yml`.
-2. **Untracked Portal:** Check if the portal is properly tracked. You can do this by looking at it and typing `/ip remove` (as admin) to see if it registers as a managed portal. If it's not managed, it will behave like a vanilla Nether portal.
+1. `action.mode` is set to `TELEPORT` in `portals.yml`.
+2. `action.target.world` exists and is loaded.
+3. The player has the required permission.
+4. The player passes the portal access policy.
+5. The portal is managed and tracked.
 
 ---
 
-## ⚠️ Folia Region Warnings
+## Vanilla Nether Travel Happens
 
-If you see region ownership warnings in your console on Folia:
+If a custom portal sends players to the Nether:
 
-1. **Update Plugin:** Ensure you are using the latest build of IslandPortal.
-2. **Keep Schematics Compact:** Ensure your portal island schematics are compact enough to fit entirely inside one chunk (16x16 blocks) along with their required clearance.
+1. Increase `runtime.vanilla-portal-cooldown-ticks`.
+2. Confirm the portal is managed by using `/ip remove` near it as an admin.
+3. Check `runtime.portal-near-scan` if the server reports portal events from shifted positions.
+
+---
+
+## NPC Does Not Spawn
+
+Check:
+
+1. `island-npcs.enabled` is `true`.
+2. The NPC type exists in `npcs.yml`.
+3. `default-on-island` is `true` for automatic island NPCs.
+4. Unlock requirements are satisfied.
+5. `spawn-search` can find a safe stand location.
+6. The target world exists and the chunk can load.
+
+---
+
+## NPC Spawns in the Wrong Place
+
+Check:
+
+1. `island-offset` is relative to the island location/home provided by the skyblock plugin.
+2. `spawn-search.horizontal-radius` is not too large.
+3. `spawn-search.vertical-radius` is not too large.
+4. Your island schematic does not have unexpected blocks around the desired NPC location.
+
+!!! note "Safe spawn behavior"
+    If the exact offset is blocked, IslandNPC intentionally picks the nearest safe stand location it can find. This is expected behavior.
+
+---
+
+## NPC Does Not Move
+
+Check:
+
+1. `movement.enabled` is `true`.
+2. `movement.radius` is greater than `0`.
+3. There are safe blocks inside the movement radius.
+4. `movement.interval-ticks` is not extremely high.
+5. `island-npcs.movement-interval-ticks` is not extremely high.
+
+---
+
+## NPC Keeps Returning to Spawn
+
+This means IslandNPC detected the NPC outside its allowed movement area or another plugin moved the entity.
+
+Fix:
+
+- Reduce external plugin interference.
+- Increase `movement.radius` only if the island has enough safe walkable space.
+- Keep NPCs away from portals, void edges, and moving platforms.
+
+---
+
+## NPC Dies or Disappears
+
+IslandNPC should respawn it automatically.
+
+Check:
+
+1. `island-npcs.respawn-check-ticks` is not too high.
+2. `island-npcs.respawn-delay-ticks` is not too high.
+3. The NPC data still exists in `playerdata/`.
+4. The world is loaded.
+
+---
+
+## Folia Region Warnings
+
+If you see region ownership warnings:
+
+1. Update IslandPortal to the latest build.
+2. Keep portal schematics compact.
+3. Keep NPC movement radius modest.
+4. Avoid using other plugins that teleport or mutate IslandPortal-managed entities from the wrong thread.

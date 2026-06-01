@@ -1,47 +1,87 @@
 # Storage and Cleanup
 
-IslandPortal keeps track of every portal and its associated blocks to ensure no stray blocks or data are left behind when players manage their islands.
+IslandPortal tracks managed portals and managed NPCs so island resets do not leave stray blocks, entities, or stale data behind.
 
 ---
 
-## 💾 Stored Data
+## Stored Data
 
-All portal data is safely stored under the server's `playerdata` folder.
+Data is stored in:
 
-Each **Managed Portal** stores the following metadata:
+```text
+plugins/IslandPortal/playerdata/
+```
 
-- **Portal ID**
-- **Portal Type**
-- **World & Base Block Location**
-- **Facing Direction**
-- **Owner UUID**
-- **Island ID** (links the portal to the skyblock island)
-- **Default Portal Flag** (is this the first spawn portal?)
-- **Access Policies** (who is allowed to use/modify it)
-- **Island Members**
-- **Portal Frame Blocks** (the physical frame)
-- **Trigger Blocks** (the interactable middle blocks)
-- **Support Blocks** (the platform or schematic pasted around it)
+The repository groups data by owner when possible. Server-owned objects are stored in `server.yml`.
 
 ---
 
-## 🧹 Auto-Cleanup
+## Managed Portal Data
 
-When an island is deleted, reset, or removed by your Skyblock plugin, IslandPortal listens to the event and acts automatically.
+Each managed portal stores:
 
-It finds any matching managed portals linked to that island and **safely removes**:
-1. The portal frame.
-2. The trigger blocks.
-3. All tracked support blocks (from generated islands or schematic pastes).
-
-This guarantees a clean world without floating leftover portal platforms!
+- Portal id.
+- Portal type.
+- World and base block location.
+- Facing direction.
+- Owner UUID.
+- Island id.
+- Default portal flag.
+- Access policies.
+- Island members.
+- Portal frame blocks.
+- Trigger blocks.
+- Support blocks.
+- Optional return location.
 
 ---
 
-## ⏱️ Autosave
+## Managed NPC Data
 
-To prevent data loss and ensure maximum performance:
+Each managed NPC stores:
 
-- Autosave is controlled by `runtime.autosave-interval-minutes` in your `config.yml`.
-- The plugin uses an atomic dirty flag.
-- **File I/O runs entirely asynchronously** so it will never lag your main server thread or region threads.
+- NPC id.
+- NPC type.
+- World and safe spawn anchor.
+- Yaw and pitch.
+- Owner UUID.
+- Island id.
+- Island members.
+- Runtime entity id while the entity is alive.
+
+!!! note "Runtime entity id"
+    Entity ids are runtime-only. If the entity disappears, IslandNPC respawns the NPC from the saved spawn anchor and updates the tracked entity id.
+
+---
+
+## Auto-Cleanup
+
+When a supported skyblock plugin deletes, resets, or removes an island, IslandPortal removes objects linked to that island.
+
+Portal cleanup removes:
+
+1. Portal frame blocks.
+2. Trigger blocks.
+3. Tracked support blocks from generated platforms or schematics.
+
+NPC cleanup removes:
+
+1. The live Bukkit entity if it exists.
+2. The managed NPC data entry.
+3. Runtime movement and respawn tracking state.
+
+---
+
+## Autosave
+
+Portal and NPC repositories use dirty flags to avoid unnecessary disk writes.
+
+Important notes:
+
+- Portal autosave is controlled by `runtime.autosave-interval-minutes`.
+- NPC data is saved when NPC data changes.
+- File I/O is designed to avoid main-thread or region-thread blocking.
+- Portal and NPC sections share the same owner data files safely.
+
+!!! warning "Do not edit while running"
+    Avoid editing files in `playerdata/` while the server is running. Use configuration files for behavior changes and admin commands for managed object changes.

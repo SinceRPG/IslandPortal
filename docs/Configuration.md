@@ -1,105 +1,175 @@
 # Configuration
 
-IslandPortal is highly customizable. Upon first startup, the plugin generates four editable configuration files in the `plugins/IslandPortal/` directory.
+IslandPortal generates editable YAML files in:
+
+```text
+plugins/IslandPortal/
+```
+
+Main files:
+
+- `config.yml`: Runtime behavior, integrations, cooldowns, and scheduler loops.
+- `portals.yml`: Portal types, items, shapes, island placement, access policies, and actions.
+- `npcs.yml`: IslandNPC types, spawn behavior, movement, unlocks, and interactions.
+- `menus.yml`: Portal settings GUI.
+- `messages.yml`: Command and player-facing messages.
 
 ---
 
-## ⚙️ `config.yml`
+## `config.yml`
 
-This is the main configuration file for the plugin's runtime behavior and integrations.
+### Global
 
 ```yaml
-# Master switch to enable or disable the plugin
+# Master switch for the plugin.
 enabled: true
 
-# Enable to output console diagnostics for placement, schematics, and cleanup
+# Prints internal placement, cleanup, migration, portal, and NPC diagnostics.
 debug: false
 ```
 
-### Hooks & Integrations
+### Hooks
 
-Enable the hooks that match your Skyblock engine. Only enable the ones you have installed!
+Only enable hooks for skyblock plugins installed on your server.
 
 ```yaml
 hooks:
   bentobox: true
-  superior-skyblock: false
-  skyllia: false
+  superior-skyblock: true
+  skyllia: true
 ```
 
 ### Commands
 
-Customize how players interact with the plugin command.
-
 ```yaml
 commands:
-  description: "IslandPortal main command"
-  aliases: ["ip", "isportal"]
+  description: "Manage island portals"
+  aliases:
+    - ip
 ```
 
-### Runtime Settings
-
-These control the core loop and interaction delays.
+### Runtime
 
 ```yaml
 runtime:
-  # How often to asynchronously save portal data to disk
-  autosave-interval-minutes: 15
-  
-  # Prevents vanilla nether logic from firing (increase if players get sent to the nether)
-  vanilla-portal-cooldown-ticks: 40
-  
-  # How long a player must wait between portal uses
-  use-cooldown-millis: 2000
-  
-  # The lookup radius to detect portals around a player
-  portal-near-scan: 2
+  # Saves dirty portal data every N minutes.
+  autosave-interval-minutes: 10
+
+  # Prevents vanilla Nether behavior while using managed portals.
+  vanilla-portal-cooldown-ticks: 200
+
+  # Per-player portal action cooldown.
+  use-cooldown-millis: 1000
+
+  # Nearby lookup radius when portal events report slightly shifted positions.
+  portal-near-scan:
+    horizontal: 2
+    below: 1
+    above: 2
 ```
 
-### Island Creation & Placement
-
-Control how the plugin queues its portal placement after an island is created.
+### IslandNPC Runtime
 
 ```yaml
-# Delay after island creation before first default portal placement attempt
-creation-delay-ticks: 20
+island-npcs:
+  # Master switch for all IslandNPC behavior.
+  enabled: true
 
-# How many times to retry if the skyblock plugin is still pasting
+  # Prevents players from spam-clicking NPCs.
+  interaction-cooldown-millis: 750
+
+  # How often NPCs rotate to face nearby players.
+  look-interval-ticks: 10
+
+  # How often IslandNPC evaluates movement.
+  # Per-NPC movement.interval-ticks is still respected.
+  movement-interval-ticks: 10
+
+  # How often IslandNPC checks whether managed entities disappeared or died.
+  respawn-check-ticks: 40
+
+  # Delay before respawning a missing/dead NPC.
+  respawn-delay-ticks: 40
+
+  # Delay after island creation before default NPCs are placed.
+  creation-delay-ticks: 60
+```
+
+### Island Creation and Cleanup
+
+```yaml
+# Delay after island creation before portal placement starts.
+creation-delay-ticks: 60
+
+# Retry count if the skyblock plugin is still pasting/building the island.
 creation-retry-attempts: 5
 
-# Delay between retries
+# Delay between placement retries.
 creation-retry-delay-ticks: 40
 
-# Fallback cleanup radius when an exact island ID is unavailable
-island-cleanup-radius: 50
+# Fallback cleanup radius when an exact island id is unavailable.
+island-cleanup-radius: 100
 ```
 
 ---
 
-## 🚪 `portals.yml`
+## `portals.yml`
 
-This file defines your custom **Portal Types**. Each portal type contains detailed configurations:
+`portals.yml` defines custom portal types.
 
-- **Item Metadata:** Name, lore, and material for the portal item.
-- **Shape & Materials:** The block frame shape and materials required.
-- **Placement:** Island offset and facing direction.
-- **Island Mode:** Use generated blocks or a `.schem` file.
-- **Defaults:** Default creation toggles and access policy defaults.
-- **Actions:** Whether entering the portal executes a command or teleports the player.
+Portal types can configure:
 
----
+- Portal item material, display name, lore, custom model data, flags, and glint.
+- Frame size and materials.
+- Track-only mode for schematic portals.
+- Island offsets and facing.
+- Portal island generation or schematic paste settings.
+- Default-on-island behavior.
+- Access policies.
+- Per-type permission nodes.
+- Teleport or command actions.
 
-## 🖼️ `menus.yml`
-
-IslandPortal provides an in-game settings GUI. This file controls:
-
-- The GUI Title and Size.
-- Item layouts and slots.
-- Display names, lore, and materials for the buttons.
-- Click actions and sound effects.
+See [Schematic Portals](Schematic-Portal-Islands.md) for schematic-specific setup.
 
 ---
 
-## 💬 `messages.yml`
+## `npcs.yml`
 
-Customize all command messages and player-facing interactions. Supports modern color codes and formatting.
+`npcs.yml` defines IslandNPC types.
+
+NPC types can configure:
+
+- Entity type and villager profession.
+- Nameplate and visual behavior.
+- Safe spawn search.
+- Look-at-player behavior.
+- Controlled movement.
+- Automatic respawn.
+- Unlock requirements.
+- Left-click and right-click interactions.
+- Player commands and console commands.
+
+See [Island NPCs](IslandNPC.md) for the full reference and examples.
+
+---
+
+## `menus.yml`
+
+`menus.yml` controls the portal settings GUI:
+
+- Inventory title.
+- Inventory size.
+- Item slots.
+- Materials.
+- Display names.
+- Lore.
+- Custom model data.
+- GUI actions.
+
+---
+
+## `messages.yml`
+
+`messages.yml` controls player-facing and command messages.
+
+Portal interaction messages support MiniMessage formatting. Command messages are kept plain for console compatibility.

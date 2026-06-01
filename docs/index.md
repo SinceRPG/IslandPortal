@@ -2,35 +2,60 @@
 hide:
   - navigation
 ---
+
 # Welcome to IslandPortal
 
-**IslandPortal** is a high-performance, Folia-aware Paper plugin designed to seamlessly manage skyblock portal islands. 
+**IslandPortal** is a Folia-aware Paper plugin for skyblock portal islands, managed portal blocks, custom portal actions, and configurable island NPCs.
 
-Whether you are running a classic Skyblock server on Paper or a massively scaled world on Folia, IslandPortal handles default portal placement, block tracking, custom schematics, access control, and cleanups without breaking a sweat.
-
----
-
-## 🚀 Key Features
-
-- **Folia & Paper Ready:** Built from the ground up for modern server architectures. Fully utilizes Folia's region scheduler and async teleportation.
-- **Multiple Skyblock Integrations:** Works seamlessly with **BentoBox**, **SuperiorSkyblock2**, and **Skyllia**.
-- **Managed Portals:** Every portal is tracked. We save the ownership, access policies, portal blocks, and trigger blocks.
-- **Schematic Island Generation:** Don't just place a portal frame—paste an entire custom schematic around it!
-- **Auto-Cleanup:** When an island is deleted or reset, IslandPortal automatically removes the associated portals and support blocks.
-- **Custom Actions:** Route players to commands, worlds, or specific servers when they enter a portal.
+It is built for servers that need predictable behavior on both Paper and Folia: region-safe scheduling, async teleportation, tracked data, island lifecycle cleanup, and simple YAML configuration.
 
 ---
 
-## 🛠️ Runtime Model
+## Key Features
 
-How does it work behind the scenes?
+- **Folia and Paper ready:** Uses a platform scheduler that respects Folia region ownership and Paper's normal scheduler.
+- **Skyblock integrations:** Supports BentoBox, SuperiorSkyblock2, and Skyllia island create/delete/reset events.
+- **Managed portals:** Tracks ownership, access policies, frame blocks, trigger blocks, support blocks, and return locations.
+- **Portal islands:** Can generate simple platforms or paste WorldEdit/FAWE schematics for portal islands.
+- **Custom portal actions:** Teleport players or execute configured console commands.
+- **IslandNPC:** Adds configurable NPCs with safe spawn search, click actions, dialogue, commands, look-at-player behavior, movement, unlock conditions, and automatic respawn.
+- **Cleanup:** Removes managed portals and NPCs when supported skyblock islands are deleted or reset.
+- **Admin tools:** Includes commands for reload, portal creation, portal removal, NPC spawn, and NPC removal.
 
-IslandPortal creates **Managed Portals**. A Managed Portal contains:
+---
 
-- Ownership data (who created it)
-- Access policies (who can use it)
-- Portal frame blocks (the physical frame)
-- Trigger blocks (the interactive area)
-- Optional support blocks (the surrounding island)
+## Runtime Model
 
-**Default Island Portals** are placed intelligently. They are queued immediately after an island creation event. If your skyblock plugin takes time to paste its own massive schematic, IslandPortal will retry placement until the area is ready.
+IslandPortal creates managed objects instead of leaving raw blocks/entities untracked.
+
+A managed portal stores:
+
+- Portal id and type.
+- Owner and island id.
+- Island members.
+- Access policies.
+- Portal blocks and trigger blocks.
+- Optional support blocks.
+- Optional return location.
+
+A managed NPC stores:
+
+- NPC id and type.
+- Owner and island id.
+- Island members.
+- Safe spawn anchor.
+- Current entity id while the entity is alive.
+
+Default island portals and NPCs are queued after island creation events. This gives skyblock plugins time to finish their own island paste logic before IslandPortal places portal structures or NPCs.
+
+---
+
+## Recommended Reading
+
+- [Configuration](Configuration.md)
+- [Commands and Permissions](Commands-and-Permissions.md)
+- [Island NPCs](IslandNPC.md)
+- [Schematic Portals](Schematic-Portal-Islands.md)
+- [Storage and Cleanup](Storage-and-Cleanup.md)
+- [Folia Architecture](Folia-Architecture.md)
+- [Troubleshooting](Troubleshooting.md)

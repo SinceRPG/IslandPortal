@@ -15,6 +15,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -58,7 +59,7 @@ public final class PortalSettingsMenu {
             meta.lore(config.lore().stream().map(line -> miniMessage.deserialize(apply(line, portal))).toList());
         }
         if (config.customModelData() != null) {
-            meta.setCustomModelData(config.customModelData());
+            setCustomModelData(meta, config.customModelData());
         }
         meta.setUnbreakable(config.unbreakable());
         if (config.enchantmentGlint() != null) {
@@ -98,5 +99,11 @@ public final class PortalSettingsMenu {
     private AccessPolicy next(AccessPolicy policy) {
         AccessPolicy[] values = AccessPolicy.values();
         return values[(policy.ordinal() + 1) % values.length];
+    }
+
+    private void setCustomModelData(ItemMeta meta, int value) {
+        org.bukkit.inventory.meta.components.CustomModelDataComponent component = meta.getCustomModelDataComponent();
+        component.setFloats(List.of((float) value));
+        meta.setCustomModelDataComponent(component);
     }
 }

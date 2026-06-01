@@ -6,6 +6,7 @@ import fr.euphyllia.skyllia.api.event.SkyblockDeleteEvent;
 import fr.euphyllia.skyllia.api.skyblock.Island;
 import fr.euphyllia.skyllia.api.skyblock.Players;
 import fr.euphyllia.skyllia.api.skyblock.model.Position;
+import net.danh.islandportal.npc.service.IslandNpcService;
 import net.danh.islandportal.platform.PlatformScheduler;
 import net.danh.islandportal.portal.service.PortalService;
 import org.bukkit.Bukkit;
@@ -23,10 +24,12 @@ import java.util.UUID;
 public final class SkylliaListener implements Listener {
 
     private final PortalService portalService;
+    private final IslandNpcService npcService;
     private final PlatformScheduler scheduler;
 
-    public SkylliaListener(PortalService portalService, PlatformScheduler scheduler) {
+    public SkylliaListener(PortalService portalService, IslandNpcService npcService, PlatformScheduler scheduler) {
         this.portalService = portalService;
+        this.npcService = npcService;
         this.scheduler = scheduler;
     }
 
@@ -59,11 +62,16 @@ public final class SkylliaListener implements Listener {
         Island island = event.getIsland();
         UUID ownerId = island.getOwner() == null ? null : island.getOwner().getMojangId();
         Location location = islandLocation(island);
-        portalService.handleIslandRemoved("skyllia:" + island.getId(), location, ownerId == null ? null : ownerId.toString(), ownerId == null ? null : ownerId.toString(), members(island));
+        String islandId = "skyllia:" + island.getId();
+        portalService.handleIslandRemoved(islandId, location, ownerId == null ? null : ownerId.toString(), ownerId == null ? null : ownerId.toString(), members(island));
+        npcService.handleIslandRemoved(islandId, location);
     }
 
     private void handleIslandCreated(Island island, Location location, UUID ownerId) {
-        portalService.handleIslandCreated("skyllia:" + island.getId(), location, ownerId.toString(), members(island));
+        String islandId = "skyllia:" + island.getId();
+        List<String> islandMembers = members(island);
+        portalService.handleIslandCreated(islandId, location, ownerId.toString(), islandMembers);
+        npcService.handleIslandCreated(islandId, location, ownerId.toString(), islandMembers);
     }
 
     private Location islandLocation(Island island) {

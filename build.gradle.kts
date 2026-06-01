@@ -31,6 +31,10 @@ java {
 }
 
 tasks {
+    withType<JavaCompile>().configureEach {
+        options.compilerArgs.addAll(listOf("-Xlint:deprecation", "-Werror"))
+    }
+
     build {
         dependsOn(shadowJar)
     }

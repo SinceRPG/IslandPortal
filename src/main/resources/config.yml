@@ -30,6 +30,22 @@ runtime:
     below: 1
     above: 2
 
+island-npcs:
+  # Master switch for island NPC handling.
+  enabled: true
+  # Per-player cooldown for clicking NPCs.
+  interaction-cooldown-millis: 750
+  # How often NPCs rotate to face nearby players.
+  look-interval-ticks: 10
+  # How often IslandNPC processes small wander steps.
+  movement-interval-ticks: 10
+  # How often IslandNPC checks whether managed entities disappeared or died.
+  respawn-check-ticks: 40
+  # Delay before respawning a managed NPC after it dies/disappears.
+  respawn-delay-ticks: 40
+  # Delay after island creation before default NPCs are placed.
+  creation-delay-ticks: 60
+
 # How long to wait after a skyblock island-create event before placing default portals.
 # Use this when the island plugin still needs a few ticks to paste schematics or finish hooks.
 creation-delay-ticks: 60

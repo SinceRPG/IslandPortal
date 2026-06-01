@@ -12,6 +12,8 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.util.List;
+
 public final class PortalItemFactory {
 
     private final MiniMessage miniMessage = MiniMessage.miniMessage();
@@ -32,7 +34,7 @@ public final class PortalItemFactory {
             meta.lore(settings.lore().stream().map(miniMessage::deserialize).toList());
         }
         if (settings.customModelData() != null) {
-            meta.setCustomModelData(settings.customModelData());
+            setCustomModelData(meta, settings.customModelData());
         }
         meta.setUnbreakable(settings.unbreakable());
         if (settings.enchantmentGlint() != null) {
@@ -55,5 +57,11 @@ public final class PortalItemFactory {
         }
         String typeId = item.getItemMeta().getPersistentDataContainer().get(itemTypeKey, PersistentDataType.STRING);
         return typeId == null ? null : config.type(typeId);
+    }
+
+    private void setCustomModelData(ItemMeta meta, int value) {
+        org.bukkit.inventory.meta.components.CustomModelDataComponent component = meta.getCustomModelDataComponent();
+        component.setFloats(List.of((float) value));
+        meta.setCustomModelDataComponent(component);
     }
 }
