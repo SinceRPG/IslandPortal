@@ -1,0 +1,120 @@
+# Fisher minions.
+#
+# Notes:
+# - FISHER looks for water in front of the minion and currently produces cod.
+# - Keep water pools close to the minion direction for online production.
+# - Offline fallback uses normal minion timing and respects the offline cap.
+minion-types:
+  fisher:
+    item:
+      material: FISHING_ROD
+      display-name: "<aqua>Fisher Minion"
+      lore:
+        - "<dark_gray>Fisher Type"
+        - "<gray>Catches fish from water pools in front of itself."
+    display:
+      name: "<aqua>Fisher Minion <white>T%tier%"
+      head-material: COD
+      main-hand-material: FISHING_ROD
+      small: true
+      glowing: false
+      health: 20
+    action:
+      type: FISHER
+      range: 4
+      blocks-per-action: 1
+      smelt-at-tier: 0
+      spawn-block: WATER
+      spawn-entity: COD
+      allowed-materials:
+        - WATER
+      sell-materials: []
+    limits:
+      max-per-owner: 5
+    requires-fuel: false
+    offline-production-limit-seconds: 14400
+    offline-production-limit-permission:
+      - permission: islandportal.minion.offline.vip
+        limit-seconds: 28800
+    shop:
+      enabled: false
+      sell-commands: []
+    drops:
+      items:
+        - material: COD
+          amount: 1
+        - material: SALMON
+          amount: 1
+    tiers:
+      1:
+        interval-seconds: 42
+        storage-limit: 64
+        upgrade-cost:
+          - material: COD
+            amount: 64
+      2:
+        interval-seconds: 30
+        storage-limit: 128
+        upgrade-cost:
+          - material: SALMON
+            amount: 96
+      3:
+        interval-seconds: 22
+        storage-limit: 256
+        upgrade-cost: []
+
+  treasure_fisher:
+    item:
+      material: TROPICAL_FISH
+      display-name: "<blue>Treasure Fisher Minion"
+      lore:
+        - "<dark_gray>Fisher Type"
+        - "<gray>Slower fuel-required fisher for premium pools."
+    display:
+      name: "<blue>Treasure Fisher <white>T%tier%"
+      head-material: PUFFERFISH
+      main-hand-material: FISHING_ROD
+      small: true
+      glowing: true
+      health: 24
+    action:
+      type: FISHER
+      range: 5
+      blocks-per-action: 1
+      smelt-at-tier: 0
+      spawn-block: WATER
+      spawn-entity: PUFFERFISH
+      allowed-materials:
+        - WATER
+      sell-materials: []
+    limits:
+      max-per-owner: 3
+    requires-fuel: true
+    offline-production-limit-seconds: 7200
+    offline-production-limit-permission:
+      - permission: islandportal.minion.offline.mvp
+        limit-seconds: 21600
+    shop:
+      enabled: false
+      sell-commands: []
+    drops:
+      items:
+        - material: COD
+          amount: 1
+    tiers:
+      1:
+        interval-seconds: 70
+        storage-limit: 64
+        upgrade-cost:
+          - material: TROPICAL_FISH
+            amount: 32
+      2:
+        interval-seconds: 52
+        storage-limit: 128
+        upgrade-cost:
+          - material: PRISMARINE_CRYSTALS
+            amount: 64
+      3:
+        interval-seconds: 38
+        storage-limit: 256
+        upgrade-cost: []

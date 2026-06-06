@@ -1,0 +1,59 @@
+# Feeder minions.
+#
+# Notes:
+# - FEEDER shares its active fuel timer with nearby minions within range.
+# - This minion should require fuel, otherwise it has nothing useful to share.
+# - drops.items is intentionally empty because the action modifies nearby minions instead of producing items.
+minion-types:
+  feeder:
+    item:
+      material: WHEAT
+      display-name: "<green>Feeder Minion"
+      lore:
+        - "<dark_gray>Feeder Type"
+        - "<gray>Shares active fuel with nearby minions."
+    display:
+      name: "<green>Feeder Minion <white>T%tier%"
+      head-material: HAY_BLOCK
+      main-hand-material: WHEAT
+      small: true
+      glowing: false
+      health: 22
+    action:
+      type: FEEDER
+      range: 5
+      blocks-per-action: 1
+      smelt-at-tier: 0
+      spawn-block: HAY_BLOCK
+      spawn-entity: ZOMBIE
+      allowed-materials: []
+      sell-materials: []
+    limits:
+      max-per-owner: 4
+    requires-fuel: true
+    offline-production-limit-seconds: 7200
+    offline-production-limit-permission:
+      - permission: islandportal.minion.offline.vip
+        limit-seconds: 14400
+    shop:
+      enabled: false
+      sell-commands: []
+    drops:
+      items: []
+    tiers:
+      1:
+        interval-seconds: 45
+        storage-limit: 64
+        upgrade-cost:
+          - material: WHEAT
+            amount: 128
+      2:
+        interval-seconds: 34
+        storage-limit: 128
+        upgrade-cost:
+          - material: WHEAT
+            amount: 384
+      3:
+        interval-seconds: 24
+        storage-limit: 256
+        upgrade-cost: []

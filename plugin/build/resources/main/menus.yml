@@ -1,0 +1,147 @@
+# Every visible item in the portal settings menu is controlled here.
+# Supported MiniMessage placeholders:
+# %portal_id%, %portal_type%, %owner%, %island_id%, %default%
+# %pickup_policy%, %use_policy%, %configure_policy%
+# %next_pickup_policy%, %next_use_policy%, %next_configure_policy%
+settings:
+  # Inventory title. MiniMessage colors are supported.
+  title: "<gradient:#33d6ff:#8dffb0>Portal Settings</gradient> <dark_gray>| <white>%portal_type%"
+
+  # Inventory size must be a multiple of 9 from 9 to 54.
+  size: 45
+
+  # Each item supports slot or slots, plus the same basic item meta as portal
+  # items: material, amount, display-name, lore, custom-model-data,
+  # unbreakable, enchantment-glint, and item-flags.
+  #
+  # action values:
+  # none      - decorative item
+  # pickup    - cycle who can pick up this portal
+  # use       - cycle who can use this portal
+  # configure - cycle who can open this settings menu
+  # close     - close the inventory
+  items:
+    decorate-a:
+      slots:
+        - 0
+        - 2
+        - 4
+        - 6
+        - 8
+        - 18
+        - 26
+        - 36
+        - 38
+        - 40
+        - 42
+        - 44
+      action: none
+      material: CYAN_STAINED_GLASS_PANE
+      amount: 1
+      display-name: " "
+      lore: []
+      custom-model-data: 0
+      unbreakable: false
+      enchantment-glint: false
+      item-flags:
+        - HIDE_ATTRIBUTES
+    decorate-b:
+      slots:
+        - 1
+        - 3
+        - 5
+        - 7
+        - 9
+        - 17
+        - 27
+        - 35
+        - 37
+        - 39
+        - 41
+        - 43
+      action: none
+      material: LIGHT_BLUE_STAINED_GLASS_PANE
+      amount: 1
+      display-name: " "
+      lore: []
+      custom-model-data: 0
+      unbreakable: false
+      enchantment-glint: false
+      item-flags:
+        - HIDE_ATTRIBUTES
+    info:
+      slot: 13
+      action: none
+      material: BOOK
+      amount: 1
+      display-name: "<aqua><bold>Portal Info"
+      lore:
+        - "<gray>Type: <white>%portal_type%"
+        - "<gray>Owner: <white>%owner%"
+        - "<gray>Island: <white>%island_id%"
+        - "<gray>Default portal: <white>%default%"
+      custom-model-data: 0
+      unbreakable: false
+      enchantment-glint: true
+      item-flags:
+        - HIDE_ATTRIBUTES
+        - HIDE_ENCHANTS
+    pickup-policy:
+      slot: 20
+      action: pickup
+      material: ENDER_PEARL
+      amount: 1
+      display-name: "<aqua>Pickup Access"
+      lore:
+        - "<gray>Current: <white>%pickup_policy%"
+        - "<gray>Click to change to:"
+        - "<green>%next_pickup_policy%"
+      custom-model-data: 0
+      unbreakable: false
+      enchantment-glint: false
+      item-flags:
+        - HIDE_ATTRIBUTES
+    configure-policy:
+      slot: 22
+      action: configure
+      material: COMPARATOR
+      amount: 1
+      display-name: "<yellow>Menu Access"
+      lore:
+        - "<gray>Current: <white>%configure_policy%"
+        - "<gray>Click to change to:"
+        - "<green>%next_configure_policy%"
+      custom-model-data: 0
+      unbreakable: false
+      enchantment-glint: true
+      item-flags:
+        - HIDE_ATTRIBUTES
+        - HIDE_ENCHANTS
+    use-policy:
+      slot: 24
+      action: use
+      material: NETHER_STAR
+      amount: 1
+      display-name: "<gold>Use Access"
+      lore:
+        - "<gray>Current: <white>%use_policy%"
+        - "<gray>Click to change to:"
+        - "<green>%next_use_policy%"
+      custom-model-data: 0
+      unbreakable: false
+      enchantment-glint: false
+      item-flags:
+        - HIDE_ATTRIBUTES
+    close:
+      slot: 31
+      action: close
+      material: BARRIER
+      amount: 1
+      display-name: "<red>Close"
+      lore:
+        - "<gray>Save is automatic."
+      custom-model-data: 0
+      unbreakable: false
+      enchantment-glint: false
+      item-flags:
+        - HIDE_ATTRIBUTES

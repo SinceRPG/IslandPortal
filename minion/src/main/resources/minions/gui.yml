@@ -1,0 +1,97 @@
+# Minion management GUI.
+#
+# Notes:
+# - size must be 9, 18, 27, 36, 45, or 54.
+# - MiniMessage colors are supported in title, names, and lore.
+# - Supported actions: none, collect, fuel, upgrade, sell, pickup, rotate, link_chest, close.
+# - fuel and booster are input slots: hold a configured item on the cursor and click
+#   the slot. They do not scan or auto-withdraw from the player's inventory.
+# - Supported placeholders: %type%, %tier%, %stored%, %storage_limit%, %fuel%, %upgrade_lore%.
+title: "<dark_gray>Minion: <gold>%type%"
+size: 27
+
+items:
+  status:
+    slot: 4
+    material: PLAYER_HEAD
+    name: "<gold>Status"
+    lore:
+      - "<gray>Tier: <white>%tier%"
+      - "<gray>Stored: <white>%stored%/%storage_limit%"
+      - "<gray>Work Area: <white>%action_size%x%action_size%"
+      - "<gray>Fuel: <white>%fuel%"
+      - "<gray>Booster: <white>%booster%"
+    action: none
+
+  collect:
+    slot: 10
+    material: CHEST
+    name: "<green>Collect"
+    lore:
+      - "<gray>Move stored items to your inventory."
+    action: collect
+
+  fuel:
+    slot: 12
+    material: COAL
+    name: "<yellow>Fuel Slot"
+    lore:
+      - "<gray>Place speed fuel here."
+      - "<gray>Current: <white>%fuel%"
+    action: fuel
+
+  booster:
+    slot: 13
+    material: BLAZE_POWDER
+    name: "<gold>Booster Slot"
+    lore:
+      - "<gray>Place output booster here."
+      - "<gray>Current: <white>%booster%"
+    action: booster
+
+  upgrade:
+    slot: 15
+    material: ANVIL
+    name: "<aqua>Upgrade"
+    lore:
+      - "%upgrade_lore%"
+    action: upgrade
+
+  sell:
+    slot: 17
+    material: EMERALD
+    name: "<green>Sell Storage"
+    lore:
+      - "<gray>Runs configured shop commands."
+    action: sell
+
+  pickup:
+    slot: 18
+    material: BARRIER
+    name: "<red>Pickup"
+    lore:
+      - "<gray>Collect storage and return the minion item."
+    action: pickup
+
+  rotate:
+    slot: 20
+    material: COMPASS
+    name: "<yellow>Rotate"
+    lore:
+      - "<gray>Rotates the minion direction."
+    action: rotate
+
+  close:
+    slot: 22
+    material: OAK_DOOR
+    name: "<gray>Close"
+    lore: []
+    action: close
+
+  link_chest:
+    slot: 24
+    material: CHEST
+    name: "<gold>Link Chest"
+    lore:
+      - "<gray>Links the nearest chest in range."
+    action: link_chest

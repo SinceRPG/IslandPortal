@@ -56,24 +56,31 @@ jobs:
           VERSION_TAG="v${VERSION}"
           DEV_TAG="latest-devbuild"
 
-          JAR_FILE=$(find build/libs -maxdepth 1 -type f -name "*-all.jar" ! -name "*-sources.jar" ! -name "*-javadoc.jar" | sort | head -n 1)
-          if [ -z "$JAR_FILE" ] || [ ! -f "$JAR_FILE" ]; then
-            echo "No build jar found in build/libs." >&2
+          PLUGIN_JAR=$(find plugin/build/libs -maxdepth 1 -type f -name "*-all.jar" ! -name "*-sources.jar" ! -name "*-javadoc.jar" | sort | head -n 1)
+          MINION_JAR=$(find minion/build/libs -maxdepth 1 -type f -name "*-all.jar" ! -name "*-sources.jar" ! -name "*-javadoc.jar" | sort | head -n 1)
+          if [ -z "$PLUGIN_JAR" ] || [ ! -f "$PLUGIN_JAR" ] || [ -z "$MINION_JAR" ] || [ ! -f "$MINION_JAR" ]; then
+            echo "Build jars not found." >&2
             exit 1
           fi
 
           mkdir -p dist
-          RELEASE_JAR="dist/IslandPortal-${VERSION}.jar"
-          DEV_JAR="dist/IslandPortal-build-${COMMIT_COUNT}.jar"
-          cp "$JAR_FILE" "$RELEASE_JAR"
-          cp "$JAR_FILE" "$DEV_JAR"
+          RELEASE_PLUGIN_JAR="dist/IslandPortal-plugin-${VERSION}.jar"
+          DEV_PLUGIN_JAR="dist/IslandPortal-plugin-build-${COMMIT_COUNT}.jar"
+          RELEASE_MINION_JAR="dist/IslandPortal-minion-${VERSION}.jar"
+          DEV_MINION_JAR="dist/IslandPortal-minion-build-${COMMIT_COUNT}.jar"
+          cp "$PLUGIN_JAR" "$RELEASE_PLUGIN_JAR"
+          cp "$PLUGIN_JAR" "$DEV_PLUGIN_JAR"
+          cp "$MINION_JAR" "$RELEASE_MINION_JAR"
+          cp "$MINION_JAR" "$DEV_MINION_JAR"
 
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "version_tag=$VERSION_TAG" >> "$GITHUB_OUTPUT"
           echo "dev_tag=$DEV_TAG" >> "$GITHUB_OUTPUT"
           echo "short_sha=$SHORT_SHA" >> "$GITHUB_OUTPUT"
-          echo "release_jar=$RELEASE_JAR" >> "$GITHUB_OUTPUT"
-          echo "dev_jar=$DEV_JAR" >> "$GITHUB_OUTPUT"
+          echo "release_plugin_jar=$RELEASE_PLUGIN_JAR" >> "$GITHUB_OUTPUT"
+          echo "dev_plugin_jar=$DEV_PLUGIN_JAR" >> "$GITHUB_OUTPUT"
+          echo "release_minion_jar=$RELEASE_MINION_JAR" >> "$GITHUB_OUTPUT"
+          echo "dev_minion_jar=$DEV_MINION_JAR" >> "$GITHUB_OUTPUT"
 
       - name: Generate Changelogs
         id: changelog
@@ -115,7 +122,8 @@ jobs:
           set -euo pipefail
 
           DEV_TAG="${{ steps.meta.outputs.dev_tag }}"
-          DEV_JAR="${{ steps.meta.outputs.dev_jar }}"
+          DEV_PLUGIN_JAR="${{ steps.meta.outputs.dev_plugin_jar }}"
+          DEV_MINION_JAR="${{ steps.meta.outputs.dev_minion_jar }}"
           DEV_BODY="${{ steps.changelog.outputs.dev_body }}"
 
           git tag -f "$DEV_TAG" "$GITHUB_SHA"
@@ -141,7 +149,7 @@ jobs:
               --latest
           fi
 
-          gh release upload "$DEV_TAG" "$DEV_JAR" --clobber
+          gh release upload "$DEV_TAG" "$DEV_PLUGIN_JAR" "$DEV_MINION_JAR" --clobber
 
       - name: Publish Version Release
         if: github.ref_name == github.event.repository.default_branch
@@ -152,7 +160,8 @@ jobs:
           set -euo pipefail
 
           VERSION_TAG="${{ steps.meta.outputs.version_tag }}"
-          RELEASE_JAR="${{ steps.meta.outputs.release_jar }}"
+          RELEASE_PLUGIN_JAR="${{ steps.meta.outputs.release_plugin_jar }}"
+          RELEASE_MINION_JAR="${{ steps.meta.outputs.release_minion_jar }}"
           VERSION_BODY="${{ steps.changelog.outputs.version_body }}"
 
           git tag -f "$VERSION_TAG" "$GITHUB_SHA"
@@ -172,7 +181,7 @@ jobs:
               --latest=false
           fi
 
-          gh release upload "$VERSION_TAG" "$RELEASE_JAR" --clobber
+          gh release upload "$VERSION_TAG" "$RELEASE_PLUGIN_JAR" "$RELEASE_MINION_JAR" --clobber
 
       - name: Upload Workflow Artifact
         uses: actions/upload-artifact@v4

@@ -1,0 +1,116 @@
+# Slayer minions.
+#
+# Notes:
+# - SLAYER damages living mobs within range and converts kills into configured drops.
+# - spawn-entity is used by fallback/offline production and documentation for the target mob.
+# - Keep ranges reasonable on large servers to avoid scanning too many nearby entities.
+minion-types:
+  zombie_slayer:
+    item:
+      material: IRON_SWORD
+      display-name: "<red>Zombie Slayer Minion"
+      lore:
+        - "<dark_gray>Slayer Type"
+        - "<gray>Kills nearby zombies and stores rotten flesh."
+    display:
+      name: "<red>Zombie Slayer <white>T%tier%"
+      head-material: ZOMBIE_HEAD
+      main-hand-material: IRON_SWORD
+      small: true
+      glowing: false
+      health: 30
+    action:
+      type: SLAYER
+      range: 5
+      blocks-per-action: 1
+      smelt-at-tier: 0
+      spawn-block: STONE
+      spawn-entity: ZOMBIE
+      allowed-materials: []
+      sell-materials: []
+    limits:
+      max-per-owner: 4
+    requires-fuel: false
+    offline-production-limit-seconds: 14400
+    offline-production-limit-permission:
+      - permission: islandportal.minion.offline.vip
+        limit-seconds: 28800
+    shop:
+      enabled: false
+      sell-commands: []
+    drops:
+      items:
+        - material: ROTTEN_FLESH
+          amount: 1
+    tiers:
+      1:
+        interval-seconds: 28
+        storage-limit: 64
+        upgrade-cost:
+          - material: ROTTEN_FLESH
+            amount: 64
+      2:
+        interval-seconds: 20
+        storage-limit: 128
+        upgrade-cost:
+          - material: ROTTEN_FLESH
+            amount: 256
+      3:
+        interval-seconds: 14
+        storage-limit: 256
+        upgrade-cost: []
+
+  blaze_slayer:
+    item:
+      material: BLAZE_ROD
+      display-name: "<gold>Blaze Slayer Minion"
+      lore:
+        - "<dark_gray>Slayer Type"
+        - "<gray>Kills nearby blazes and stores blaze rods."
+    display:
+      name: "<gold>Blaze Slayer <white>T%tier%"
+      head-material: BLAZE_POWDER
+      main-hand-material: DIAMOND_SWORD
+      small: true
+      glowing: true
+      health: 36
+    action:
+      type: SLAYER
+      range: 6
+      blocks-per-action: 1
+      smelt-at-tier: 0
+      spawn-block: NETHERRACK
+      spawn-entity: BLAZE
+      allowed-materials: []
+      sell-materials: []
+    limits:
+      max-per-owner: 3
+    requires-fuel: true
+    offline-production-limit-seconds: 7200
+    offline-production-limit-permission:
+      - permission: islandportal.minion.offline.mvp
+        limit-seconds: 21600
+    shop:
+      enabled: false
+      sell-commands: []
+    drops:
+      items:
+        - material: BLAZE_ROD
+          amount: 1
+    tiers:
+      1:
+        interval-seconds: 55
+        storage-limit: 64
+        upgrade-cost:
+          - material: BLAZE_ROD
+            amount: 32
+      2:
+        interval-seconds: 40
+        storage-limit: 128
+        upgrade-cost:
+          - material: BLAZE_ROD
+            amount: 96
+      3:
+        interval-seconds: 28
+        storage-limit: 256
+        upgrade-cost: []

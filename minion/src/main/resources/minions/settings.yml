@@ -1,0 +1,158 @@
+# Global minion runtime settings.
+#
+# Notes:
+# - This file exists to keep behavior, messages, animation timing, and output routing
+#   out of Java code.
+# - Plugin adapters are optional. Do not add a soft-depend unless IslandPortal has a
+#   real bridge enabled for that plugin.
+runtime:
+  # Prefix used when generating managed minion ids.
+  id-prefix: "minion:"
+
+  # Maximum total minions on the same island id.
+  # If no supported island adapter can resolve an island, the owner UUID is used as
+  # a stable fallback island key.
+  per-island-global-limit: 80
+
+  # Cleanup radius used by island-delete/reset hooks when the hook only supplies
+  # a location and not a stable island id.
+  island-cleanup-radius: 100
+
+  # Radius used by the Link Chest GUI button.
+  link-chest-range: 5
+
+  # If false, minions pause while the owner is offline.
+  work-when-owner-offline: true
+
+  # Optional per-type place permissions. Example permission:
+  # islandportal.minion.place.miner
+  permissions:
+    place-per-type: false
+    place-prefix: "islandportal.minion.place."
+    admin-bypass: true
+
+  # Safe placement search around the clicked block.
+  placement:
+    # Horizontal search radius still comes from config.yml: minions.place-radius.
+    vertical-search-min: -2
+    vertical-search-max: 2
+
+  # Armor stand display defaults. Per-type display settings still control name,
+  # head item, small/glowing, and type health.
+  display-entity:
+    custom-name-visible: true
+    arms: true
+    base-plate: false
+    invulnerable: true
+    persistent: false
+    remove-when-far-away: false
+    max-health: 20.0
+
+  # Default equipment used when a minion type does not override display equipment.
+  default-equipment:
+    chestplate-material: LEATHER_CHESTPLATE
+    chestplate-item: LEATHER_CHESTPLATE
+    leggings-material: LEATHER_LEGGINGS
+    leggings-item: LEATHER_LEGGINGS
+    boots-material: LEATHER_BOOTS
+    boots-item: LEATHER_BOOTS
+    main-hand-material: WOODEN_PICKAXE
+    main-hand-item: WOODEN_PICKAXE
+
+  # Basic animation timings and cosmetic target feedback.
+  animations:
+    # Ticks before armor stand arm poses reset after a default action animation.
+    reset-ticks: 14
+    # Ticks before temporary BlockDisplay, ItemDisplay, and cosmetic mobs are removed.
+    target-visible-ticks: 18
+    # Vertical offset from the minion base block for temporary target visuals.
+    target-y-offset: 0.75
+    # Viewer-only block crack overlay shown at the action target.
+    block-break:
+      enabled: true
+      # Progress values from 0.0 to 1.0. Higher values show deeper crack stages.
+      progress:
+        - 0.15
+        - 0.35
+        - 0.55
+        - 0.75
+        - 0.95
+    # Farmer action visual. A temporary crop BlockDisplay grows from age 0 to max age.
+    crop-growth:
+      enabled: true
+      # Delay in ticks between each crop age stage.
+      stage-ticks: 2
+
+  # Display for fuel/booster items given by /ip minion fuel and /ip minion booster.
+  fuel-items:
+    display-name: "<gold>%fuel%"
+    lore:
+      - "<gray>Minion fuel"
+      - "<gray>Material: <white>%material%"
+      - "<gray>Speed: <white>x%speed%"
+      - "<gray>Output: <white>x%output%"
+
+  # Output routing after production.
+  output:
+    # If true and a minion has a linked chest, produced items try to enter that chest.
+    linked-chest: true
+
+    # If true and no linked chest can accept the item, hoppers below/around the minion
+    # can be used as output containers by future adapters.
+    hopper: true
+
+  # Default work-area sizing for tiers that do not define tiers.<level>.action-size.
+  # Example with default-size 3 and size-per-tier 1: T1=3x3, T2=4x4, T3=5x5.
+  action-area:
+    default-size: 3
+    size-per-tier: 1
+
+  # Auto-sell runs the minion shop commands automatically after production.
+  # Keep this disabled until your sell-commands are fully tested.
+  auto-sell:
+    enabled: false
+
+  # Optional bridges can be disabled here without editing paper-plugin.yml or Java.
+  integrations:
+    vault: true
+    shopgui-plus: true
+    essentials: true
+    cmi: true
+    packet-events:
+      enabled: true
+      view-range: 48
+    head-database: true
+    itemsadder: true
+    oraxen: true
+    nexo: true
+    mmoitems: true
+    mythicmobs: true
+
+messages:
+  limit-type: "<red>You have reached the limit for this minion type."
+  limit-island: "<red>This island has reached its global minion limit."
+  cannot-manage: "<red>You cannot manage this minion."
+  no-safe-location: "<red>No safe minion placement location found."
+  missing-place-permission: "<red>You need <white>%permission%<red> to place this minion."
+  storage-empty: "<gray>Minion storage is empty."
+  fuel-added: "<green>Fuel added: <white>%fuel%"
+  booster-added: "<green>Booster added: <white>%fuel%"
+  fuel-missing: "<red>Place a configured fuel or booster item on your cursor first."
+  max-tier: "<gray>This minion is already max tier."
+  missing-upgrade-items: "<red>You do not have the required upgrade items."
+  missing-upgrade-money: "<red>You do not have enough money for this upgrade."
+  vault-missing: "<red>Vault economy is not available."
+  upgraded: "<green>Minion upgraded to tier <white>%tier%<green>."
+  shop-missing: "<red>This minion has no shop integration configured."
+  storage-sold: "<green>Minion storage sold."
+  chest-linked: "<green>Linked nearest chest."
+  chest-missing: "<red>No chest found nearby."
+  chest-link-cancelled: "<red>Chest linking was cancelled."
+  inspect-id: "<gray>Minion id: <white>%id%"
+  inspect-type: "<gray>Type: <white>%type% <gray>Tier: <white>%tier%"
+  inspect-owner: "<gray>Owner: <white>%owner%"
+  inspect-island: "<gray>Island: <white>%island%"
+  inspect-storage: "<gray>Storage: <white>%stored%/%storage_limit%"
+  inspect-actions: "<gray>Actions: <white>%actions%"
+  inspect-fuel: "<gray>Fuel: <white>%fuel%"
+  inspect-chest: "<gray>Chest: <white>%chest%"

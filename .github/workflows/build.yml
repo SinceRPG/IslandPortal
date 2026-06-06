@@ -144,13 +144,16 @@ jobs:
                 }]
               }' > build_success.json
 
-            JAR_FILE=$(find build/libs -maxdepth 1 -name "*-all.jar" ! -name "*-sources.jar" ! -name "*-javadoc.jar" | head -n 1)
-            if [ -n "$JAR_FILE" ] && [ -f "$JAR_FILE" ]; then
+            PLUGIN_JAR=$(find plugin/build/libs -maxdepth 1 -name "*-all.jar" ! -name "*-sources.jar" ! -name "*-javadoc.jar" | head -n 1)
+            MINION_JAR=$(find minion/build/libs -maxdepth 1 -name "*-all.jar" ! -name "*-sources.jar" ! -name "*-javadoc.jar" | head -n 1)
+            if [ -n "$PLUGIN_JAR" ] && [ -f "$PLUGIN_JAR" ] && [ -n "$MINION_JAR" ] && [ -f "$MINION_JAR" ]; then
               COMMIT_COUNT=$(git rev-list --count HEAD)
               mkdir -p discord_upload
-              RENAMED_JAR="discord_upload/IslandPortal-build-${COMMIT_COUNT}.jar"
-              cp "$JAR_FILE" "$RENAMED_JAR"
-              curl -s -X PATCH -F "payload_json=<build_success.json;type=application/json" -F "file=@$RENAMED_JAR" "${WEBHOOK_URL}/messages/${MSG_ID}?thread_id=${THREAD_ID}"
+              RENAMED_PLUGIN_JAR="discord_upload/IslandPortal-plugin-build-${COMMIT_COUNT}.jar"
+              RENAMED_MINION_JAR="discord_upload/IslandPortal-minion-build-${COMMIT_COUNT}.jar"
+              cp "$PLUGIN_JAR" "$RENAMED_PLUGIN_JAR"
+              cp "$MINION_JAR" "$RENAMED_MINION_JAR"
+              curl -s -X PATCH -F "payload_json=<build_success.json;type=application/json" -F "file1=@$RENAMED_PLUGIN_JAR" -F "file2=@$RENAMED_MINION_JAR" "${WEBHOOK_URL}/messages/${MSG_ID}?thread_id=${THREAD_ID}"
             else
               curl -s -X PATCH -H "Content-Type: application/json" -d @build_success.json "${WEBHOOK_URL}/messages/${MSG_ID}?thread_id=${THREAD_ID}"
             fi
@@ -198,5 +201,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: IslandPortal-Build
-          path: build/libs/*.jar
+          path: |
+            plugin/build/libs/*-all.jar
+            minion/build/libs/*-all.jar
           retention-days: 7

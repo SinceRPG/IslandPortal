@@ -1,0 +1,129 @@
+# Lumberjack minions.
+#
+# Notes:
+# - LUMBERJACK breaks logs and leaves within range when they match allowed-materials.
+# - Online chopping stores the broken block material. drops.items is the fallback/offline output.
+# - Add nether stems here too if your server wants fungus tree support.
+minion-types:
+  oak_lumberjack:
+    item:
+      material: STONE_AXE
+      display-name: "<green>Oak Lumberjack Minion"
+      lore:
+        - "<dark_gray>Lumberjack Type"
+        - "<gray>Chops logs and leaves in range."
+    display:
+      name: "<green>Oak Lumberjack <white>T%tier%"
+      head-material: OAK_LOG
+      main-hand-material: IRON_AXE
+      small: true
+      glowing: false
+      health: 24
+    action:
+      type: LUMBERJACK
+      range: 5
+      blocks-per-action: 3
+      smelt-at-tier: 0
+      spawn-block: OAK_LOG
+      spawn-entity: ZOMBIE
+      allowed-materials:
+        - OAK_LOG
+        - OAK_WOOD
+        - OAK_LEAVES
+      sell-materials: []
+    limits:
+      max-per-owner: 5
+    requires-fuel: false
+    offline-production-limit-seconds: 14400
+    offline-production-limit-permission:
+      - permission: islandportal.minion.offline.vip
+        limit-seconds: 28800
+    shop:
+      enabled: false
+      sell-commands: []
+    drops:
+      items:
+        - material: OAK_LOG
+          amount: 2
+        - material: STICK
+          amount: 1
+    tiers:
+      1:
+        interval-seconds: 30
+        storage-limit: 96
+        upgrade-cost:
+          - material: OAK_LOG
+            amount: 128
+      2:
+        interval-seconds: 22
+        storage-limit: 192
+        upgrade-cost:
+          - material: OAK_LOG
+            amount: 384
+      3:
+        interval-seconds: 16
+        storage-limit: 384
+        upgrade-cost: []
+
+  nether_lumberjack:
+    item:
+      material: NETHERITE_AXE
+      display-name: "<dark_red>Nether Lumberjack Minion"
+      lore:
+        - "<dark_gray>Lumberjack Type"
+        - "<gray>Chops crimson and warped stems."
+    display:
+      name: "<dark_red>Nether Lumberjack <white>T%tier%"
+      head-material: CRIMSON_STEM
+      main-hand-material: DIAMOND_AXE
+      small: true
+      glowing: true
+      health: 32
+    action:
+      type: LUMBERJACK
+      range: 5
+      blocks-per-action: 3
+      smelt-at-tier: 0
+      spawn-block: CRIMSON_STEM
+      spawn-entity: ZOMBIE
+      allowed-materials:
+        - CRIMSON_STEM
+        - CRIMSON_HYPHAE
+        - WARPED_STEM
+        - WARPED_HYPHAE
+        - NETHER_WART_BLOCK
+        - WARPED_WART_BLOCK
+      sell-materials: []
+    limits:
+      max-per-owner: 3
+    requires-fuel: true
+    offline-production-limit-seconds: 7200
+    offline-production-limit-permission:
+      - permission: islandportal.minion.offline.mvp
+        limit-seconds: 21600
+    shop:
+      enabled: false
+      sell-commands: []
+    drops:
+      items:
+        - material: CRIMSON_STEM
+          amount: 1
+        - material: WARPED_STEM
+          amount: 1
+    tiers:
+      1:
+        interval-seconds: 45
+        storage-limit: 64
+        upgrade-cost:
+          - material: CRIMSON_STEM
+            amount: 64
+      2:
+        interval-seconds: 32
+        storage-limit: 128
+        upgrade-cost:
+          - material: WARPED_STEM
+            amount: 128
+      3:
+        interval-seconds: 24
+        storage-limit: 256
+        upgrade-cost: []
