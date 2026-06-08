@@ -4,6 +4,9 @@ IslandPortal Minions are managed island workers. Players place a minion item, th
 
 The system is separate from IslandNPC because minions need production state, offline calculation, storage, fuel, tier upgrades, anti-dupe handling, and ownership protection.
 
+> [!WARNING]
+> **Beta Feature:** The Minions system is currently in beta. It may contain bugs, balance issues, or break unexpectedly on Folia. It is **not recommended** to use this feature on a production server yet.
+
 ---
 
 ## Feature Set

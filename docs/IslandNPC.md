@@ -311,10 +311,24 @@ npc-types:
     name: "<light_purple>Quest Master"
     profession: CARTOGRAPHER
     default-on-island: true
-    island-offset: { x: -3.5, y: 1.0, z: 1.5 }
-    spawn-search: { enabled: true, horizontal-radius: 6, vertical-radius: 4, step: 1 }
-    look-at-player: { enabled: true, radius: 10 }
-    movement: { enabled: false, radius: 0, interval-ticks: 20, step-distance: 0.25, target-attempts: 6 }
+    island-offset:
+      x: -3.5
+      y: 1.0
+      z: 1.5
+    spawn-search:
+      enabled: true
+      horizontal-radius: 6
+      vertical-radius: 4
+      step: 1
+    look-at-player:
+      enabled: true
+      radius: 10
+    movement:
+      enabled: false
+      radius: 0
+      interval-ticks: 20
+      step-distance: 0.25
+      target-attempts: 6
     unlock:
       default-unlocked: true
       permissions: []
@@ -343,10 +357,24 @@ npc-types:
     name: "<dark_gray>Blacksmith"
     profession: TOOLSMITH
     default-on-island: true
-    island-offset: { x: 4.5, y: 1.0, z: -2.5 }
-    spawn-search: { enabled: true, horizontal-radius: 10, vertical-radius: 6, step: 1 }
-    look-at-player: { enabled: true, radius: 8 }
-    movement: { enabled: true, radius: 3, interval-ticks: 25, step-distance: 0.3, target-attempts: 10 }
+    island-offset:
+      x: 4.5
+      y: 1.0
+      z: -2.5
+    spawn-search:
+      enabled: true
+      horizontal-radius: 10
+      vertical-radius: 6
+      step: 1
+    look-at-player:
+      enabled: true
+      radius: 8
+    movement:
+      enabled: true
+      radius: 3
+      interval-ticks: 25
+      step-distance: 0.3
+      target-attempts: 10
     unlock:
       default-unlocked: false
       permissions:
@@ -378,10 +406,24 @@ npc-types:
     entity-type: ALLAY
     name: "<aqua>Minion Manager"
     default-on-island: true
-    island-offset: { x: 0.5, y: 1.0, z: 4.5 }
-    spawn-search: { enabled: true, horizontal-radius: 8, vertical-radius: 6, step: 1 }
-    look-at-player: { enabled: true, radius: 8 }
-    movement: { enabled: true, radius: 2, interval-ticks: 30, step-distance: 0.25, target-attempts: 8 }
+    island-offset:
+      x: 0.5
+      y: 1.0
+      z: 4.5
+    spawn-search:
+      enabled: true
+      horizontal-radius: 8
+      vertical-radius: 6
+      step: 1
+    look-at-player:
+      enabled: true
+      radius: 8
+    movement:
+      enabled: true
+      radius: 2
+      interval-ticks: 30
+      step-distance: 0.25
+      target-attempts: 8
     unlock:
       default-unlocked: true
       permissions: []
