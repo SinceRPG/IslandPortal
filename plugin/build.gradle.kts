@@ -5,6 +5,10 @@ plugins {
     alias(libs.plugins.run.paper)
 }
 
+base {
+    archivesName.set("IslandPortal")
+}
+
 repositories {
     mavenCentral()
     maven("https://maven.enginehub.org/repo/")

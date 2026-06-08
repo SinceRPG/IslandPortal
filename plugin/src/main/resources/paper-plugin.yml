@@ -8,52 +8,52 @@ authors: [ VoChiDanh ]
 dependencies:
   server:
     BentoBox:
-      load: AFTER
+      load: BEFORE
       required: false
     SuperiorSkyblock2:
-      load: AFTER
+      load: BEFORE
       required: false
     Skyllia:
-      load: AFTER
+      load: BEFORE
       required: false
     Vault:
-      load: AFTER
+      load: BEFORE
       required: false
     ShopGUIPlus:
-      load: AFTER
+      load: BEFORE
       required: false
     Essentials:
-      load: AFTER
+      load: BEFORE
       required: false
     CMI:
-      load: AFTER
+      load: BEFORE
       required: false
     HeadDatabase:
-      load: AFTER
+      load: BEFORE
       required: false
     ItemsAdder:
-      load: AFTER
+      load: BEFORE
       required: false
     Oraxen:
-      load: AFTER
+      load: BEFORE
       required: false
     Nexo:
-      load: AFTER
+      load: BEFORE
       required: false
     MMOItems:
-      load: AFTER
+      load: BEFORE
       required: false
     MythicMobs:
-      load: AFTER
+      load: BEFORE
       required: false
     packetevents:
-      load: AFTER
+      load: BEFORE
       required: false
     WorldEdit:
-      load: AFTER
+      load: BEFORE
       required: false
     FastAsyncWorldEdit:
-      load: AFTER
+      load: BEFORE
       required: false
 permissions:
   islandportal.admin:

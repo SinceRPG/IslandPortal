@@ -64,8 +64,8 @@ jobs:
           fi
 
           mkdir -p dist
-          RELEASE_PLUGIN_JAR="dist/IslandPortal-plugin-${VERSION}.jar"
-          DEV_PLUGIN_JAR="dist/IslandPortal-plugin-build-${COMMIT_COUNT}.jar"
+          RELEASE_PLUGIN_JAR="dist/IslandPortal-${VERSION}.jar"
+          DEV_PLUGIN_JAR="dist/IslandPortal-build-${COMMIT_COUNT}.jar"
           RELEASE_MINION_JAR="dist/IslandPortal-minion-${VERSION}.jar"
           DEV_MINION_JAR="dist/IslandPortal-minion-build-${COMMIT_COUNT}.jar"
           cp "$PLUGIN_JAR" "$RELEASE_PLUGIN_JAR"

@@ -149,7 +149,7 @@ jobs:
             if [ -n "$PLUGIN_JAR" ] && [ -f "$PLUGIN_JAR" ] && [ -n "$MINION_JAR" ] && [ -f "$MINION_JAR" ]; then
               COMMIT_COUNT=$(git rev-list --count HEAD)
               mkdir -p discord_upload
-              RENAMED_PLUGIN_JAR="discord_upload/IslandPortal-plugin-build-${COMMIT_COUNT}.jar"
+              RENAMED_PLUGIN_JAR="discord_upload/IslandPortal-build-${COMMIT_COUNT}.jar"
               RENAMED_MINION_JAR="discord_upload/IslandPortal-minion-build-${COMMIT_COUNT}.jar"
               cp "$PLUGIN_JAR" "$RENAMED_PLUGIN_JAR"
               cp "$MINION_JAR" "$RENAMED_MINION_JAR"

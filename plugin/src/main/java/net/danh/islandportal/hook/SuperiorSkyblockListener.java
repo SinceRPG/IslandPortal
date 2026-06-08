@@ -8,6 +8,7 @@ import com.bgsoftware.superiorskyblock.api.world.Dimension;
 import net.danh.islandportal.minion.service.MinionService;
 import net.danh.islandportal.npc.service.IslandNpcService;
 import net.danh.islandportal.portal.service.PortalService;
+import net.danh.islandportal.platform.PlatformScheduler;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.event.EventHandler;
@@ -21,24 +22,30 @@ public final class SuperiorSkyblockListener implements Listener {
     private final PortalService portalService;
     private final IslandNpcService npcService;
     private final MinionService minionService;
+    private final PlatformScheduler scheduler;
 
-    public SuperiorSkyblockListener(PortalService portalService, IslandNpcService npcService, MinionService minionService) {
+    public SuperiorSkyblockListener(PortalService portalService, IslandNpcService npcService, MinionService minionService, PlatformScheduler scheduler) {
         this.portalService = portalService;
         this.npcService = npcService;
         this.minionService = minionService;
+        this.scheduler = scheduler;
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onIslandCreated(PostIslandCreateEvent event) {
         Island island = event.getIsland();
-        Location location = island.getIslandHome(Dimension.getByName(World.Environment.NORMAL.name()));
-        if (location == null) {
-            location = island.getCenter(Dimension.getByName(World.Environment.NORMAL.name()));
-        }
+        Location location = location(island);
         String islandId = "superior:" + island.getUniqueId();
         List<String> islandMembers = members(island);
-        portalService.handleIslandCreated(islandId, location, owner(island), islandMembers);
-        npcService.handleIslandCreated(islandId, location, owner(island), islandMembers);
+        Runnable task = () -> {
+            portalService.handleIslandCreated(islandId, location, owner(island), islandMembers);
+            npcService.handleIslandCreated(islandId, location, owner(island), islandMembers);
+        };
+        if (location != null) {
+            scheduler.runAt(location, task);
+        } else {
+            scheduler.runGlobal(task);
+        }
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -46,9 +53,16 @@ public final class SuperiorSkyblockListener implements Listener {
         Island island = event.getIsland();
         Location location = location(island);
         String islandId = "superior:" + island.getUniqueId();
-        portalService.handleIslandRemoved(islandId, location, event.getPlayer().getUniqueId().toString(), owner(island), members(island));
-        npcService.handleIslandRemoved(islandId, location);
-        minionService.handleIslandRemoved(islandId, location);
+        Runnable task = () -> {
+            portalService.handleIslandRemoved(islandId, location, event.getPlayer().getUniqueId().toString(), owner(island), members(island));
+            npcService.handleIslandRemoved(islandId, location);
+            minionService.handleIslandRemoved(islandId, location);
+        };
+        if (location != null) {
+            scheduler.runAt(location, task);
+        } else {
+            scheduler.runGlobal(task);
+        }
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -57,9 +71,16 @@ public final class SuperiorSkyblockListener implements Listener {
         String actor = event.getPlayer() == null ? null : event.getPlayer().getUniqueId().toString();
         Location location = location(island);
         String islandId = "superior:" + island.getUniqueId();
-        portalService.handleIslandRemoved(islandId, location, actor, owner(island), members(island));
-        npcService.handleIslandRemoved(islandId, location);
-        minionService.handleIslandRemoved(islandId, location);
+        Runnable task = () -> {
+            portalService.handleIslandRemoved(islandId, location, actor, owner(island), members(island));
+            npcService.handleIslandRemoved(islandId, location);
+            minionService.handleIslandRemoved(islandId, location);
+        };
+        if (location != null) {
+            scheduler.runAt(location, task);
+        } else {
+            scheduler.runGlobal(task);
+        }
     }
 
     private Location location(Island island) {

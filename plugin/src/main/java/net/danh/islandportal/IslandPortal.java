@@ -64,15 +64,15 @@ public final class IslandPortal extends JavaPlugin {
         IslandPortalCommand command = new IslandPortalCommand(this, portalConfig, portalService, npcConfig, npcService, minionConfig, minionService);
         getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, command::register);
 
-        if (portalConfig.bentoBoxHook() && getServer().getPluginManager().isPluginEnabled("BentoBox")) {
-            getServer().getPluginManager().registerEvents(new BentoBoxListener(portalService, npcService, minionService), this);
+        if (portalConfig.bentoBoxHook() && getServer().getPluginManager().getPlugin("BentoBox") != null) {
+            getServer().getPluginManager().registerEvents(new BentoBoxListener(portalService, npcService, minionService, platformScheduler), this);
             debug("Hooked BentoBox island-create events.");
         }
-        if (portalConfig.superiorSkyblockHook() && getServer().getPluginManager().isPluginEnabled("SuperiorSkyblock2")) {
-            getServer().getPluginManager().registerEvents(new SuperiorSkyblockListener(portalService, npcService, minionService), this);
+        if (portalConfig.superiorSkyblockHook() && getServer().getPluginManager().getPlugin("SuperiorSkyblock2") != null) {
+            getServer().getPluginManager().registerEvents(new SuperiorSkyblockListener(portalService, npcService, minionService, platformScheduler), this);
             debug("Hooked SuperiorSkyblock2 island-create events.");
         }
-        if (portalConfig.skylliaHook() && getServer().getPluginManager().isPluginEnabled("Skyllia")) {
+        if (portalConfig.skylliaHook() && getServer().getPluginManager().getPlugin("Skyllia") != null) {
             getServer().getPluginManager().registerEvents(new SkylliaListener(portalService, npcService, minionService, platformScheduler), this);
             debug("Hooked Skyllia island lookup support.");
         }

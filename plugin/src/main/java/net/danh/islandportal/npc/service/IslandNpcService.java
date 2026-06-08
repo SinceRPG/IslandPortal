@@ -701,7 +701,7 @@ public final class IslandNpcService implements Listener {
         for (World world : plugin.getServer().getWorlds()) {
             for (Entity entity : world.getEntities()) {
                 if (entity.getPersistentDataContainer().has(npcIdKey)) {
-                    entity.remove();
+                    scheduler.runFor(entity, entity::remove);
                 }
             }
         }

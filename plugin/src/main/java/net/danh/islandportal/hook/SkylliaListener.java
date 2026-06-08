@@ -5,7 +5,7 @@ import fr.euphyllia.skyllia.api.event.SkyblockCreateEvent;
 import fr.euphyllia.skyllia.api.event.SkyblockDeleteEvent;
 import fr.euphyllia.skyllia.api.skyblock.Island;
 import fr.euphyllia.skyllia.api.skyblock.Players;
-import fr.euphyllia.skyllia.api.skyblock.model.Position;
+
 import net.danh.islandportal.minion.service.MinionService;
 import net.danh.islandportal.npc.service.IslandNpcService;
 import net.danh.islandportal.platform.PlatformScheduler;
@@ -66,9 +66,16 @@ public final class SkylliaListener implements Listener {
         UUID ownerId = island.getOwner() == null ? null : island.getOwner().getMojangId();
         Location location = islandLocation(island);
         String islandId = "skyllia:" + island.getId();
-        portalService.handleIslandRemoved(islandId, location, ownerId == null ? null : ownerId.toString(), ownerId == null ? null : ownerId.toString(), members(island));
-        npcService.handleIslandRemoved(islandId, location);
-        minionService.handleIslandRemoved(islandId, location);
+        Runnable task = () -> {
+            portalService.handleIslandRemoved(islandId, location, ownerId == null ? null : ownerId.toString(), ownerId == null ? null : ownerId.toString(), members(island));
+            npcService.handleIslandRemoved(islandId, location);
+            minionService.handleIslandRemoved(islandId, location);
+        };
+        if (location != null) {
+            scheduler.runAt(location, task);
+        } else {
+            scheduler.runGlobal(task);
+        }
     }
 
     private void handleIslandCreated(Island island, Location location, UUID ownerId) {
@@ -86,8 +93,7 @@ public final class SkylliaListener implements Listener {
         if (world == null) {
             return null;
         }
-        Position position = island.getPosition();
-        return new Location(world, position.x(), world.getSpawnLocation().getY(), position.z());
+        return island.getCenterLocation(world);
     }
 
     private List<String> members(Island island) {

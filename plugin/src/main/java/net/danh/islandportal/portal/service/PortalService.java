@@ -372,9 +372,12 @@ public final class PortalService implements Listener {
         PortalType type = config.type(portal.type());
         if (type == null) {
             event.setCancelled(true);
+            event.setTo(event.getFrom());
             return;
         }
         event.setCancelled(true);
+        event.setTo(event.getFrom());
+        
         suppressVanillaPortal(event.getPlayer());
         executeAction(event.getPlayer(), portal, type);
     }
@@ -394,9 +397,12 @@ public final class PortalService implements Listener {
         PortalType type = config.type(portal.type());
         if (type == null) {
             event.setCancelled(true);
+            event.setTo(event.getFrom());
             return;
         }
         event.setCancelled(true);
+        event.setTo(event.getFrom());
+
         suppressVanillaPortal(event.getPlayer());
         executeAction(event.getPlayer(), portal, type);
     }
@@ -453,17 +459,28 @@ public final class PortalService implements Listener {
         }
         if (type.action() == PortalAction.COMMANDS) {
             String playerName = player.getName();
-            scheduler.runGlobal(() -> type.commands().forEach(command -> plugin.getServer().dispatchCommand(plugin.getServer().getConsoleSender(), command.replace("%player%", playerName))));
+            type.commands().forEach(cmd -> {
+                String parsed = cmd.replace("%player%", playerName);
+                if (parsed.startsWith("[player] ")) {
+                    String finalCmd = parsed.substring(9);
+                    scheduler.runFor(player, () -> player.performCommand(finalCmd));
+                } else {
+                    String finalCmd = parsed.startsWith("[console] ") ? parsed.substring(10) : parsed;
+                    scheduler.runGlobal(() -> plugin.getServer().dispatchCommand(plugin.getServer().getConsoleSender(), finalCmd));
+                }
+            });
             return;
         }
         if (type.target() == null) {
             send(player, message("target-world-missing"));
             return;
         }
-        player.teleportAsync(type.target()).thenAccept(success -> {
-            if (!success) {
-                scheduler.runFor(player, () -> player.sendMessage(message("target-world-missing")));
-            }
+        scheduler.runFor(player, () -> {
+            player.teleportAsync(type.target()).thenAccept(success -> {
+                if (!success) {
+                    scheduler.runFor(player, () -> player.sendMessage(message("target-world-missing")));
+                }
+            });
         });
     }
 
@@ -605,7 +622,7 @@ public final class PortalService implements Listener {
     }
 
     private void suppressVanillaPortal(Player player) {
-        scheduler.runFor(player, () -> player.setPortalCooldown(config.vanillaPortalCooldownTicks()));
+        player.setPortalCooldown(config.vanillaPortalCooldownTicks());
     }
 
     private void requestSave() {
