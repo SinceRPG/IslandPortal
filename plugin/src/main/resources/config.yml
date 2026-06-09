@@ -46,20 +46,6 @@ island-npcs:
   # Delay after island creation before default NPCs are placed.
   creation-delay-ticks: 60
 
-minions:
-  # Master switch for minion placement, production, GUI, and respawn handling.
-  enabled: true
-  # How often minions calculate production.
-  tick-interval-ticks: 20
-  # Autosaves dirty minion data every N minutes.
-  autosave-interval-minutes: 5
-  # How often missing/dead minion display entities are respawned.
-  respawn-check-ticks: 60
-  # Limits production operations per tick loop to protect large servers.
-  max-actions-per-tick: 250
-  # Safe placement scan radius if the clicked block is not a valid stand location.
-  place-radius: 4
-
 # How long to wait after a skyblock island-create event before placing default portals.
 # Use this when the island plugin still needs a few ticks to paste schematics or finish hooks.
 creation-delay-ticks: 60

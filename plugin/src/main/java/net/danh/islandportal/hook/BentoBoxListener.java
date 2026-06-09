@@ -1,7 +1,6 @@
 package net.danh.islandportal.hook;
 
 import net.danh.islandportal.npc.service.IslandNpcService;
-import net.danh.islandportal.minion.service.MinionService;
 import net.danh.islandportal.portal.service.PortalService;
 import net.danh.islandportal.platform.PlatformScheduler;
 import org.bukkit.Location;
@@ -21,13 +20,11 @@ public final class BentoBoxListener implements Listener {
 
     private final PortalService portalService;
     private final IslandNpcService npcService;
-    private final MinionService minionService;
     private final PlatformScheduler scheduler;
 
-    public BentoBoxListener(PortalService portalService, IslandNpcService npcService, MinionService minionService, PlatformScheduler scheduler) {
+    public BentoBoxListener(PortalService portalService, IslandNpcService npcService, PlatformScheduler scheduler) {
         this.portalService = portalService;
         this.npcService = npcService;
-        this.minionService = minionService;
         this.scheduler = scheduler;
     }
 
@@ -80,7 +77,6 @@ public final class BentoBoxListener implements Listener {
             Runnable task = () -> {
                 portalService.handleIslandRemoved(islandId, location, uuid(event.getPlayerUUID()), uuid(island.getOwner()), members(island));
                 npcService.handleIslandRemoved(islandId, location);
-                minionService.handleIslandRemoved(islandId, location);
             };
             if (location != null) {
                 scheduler.runAt(location, task);
@@ -98,7 +94,6 @@ public final class BentoBoxListener implements Listener {
         Runnable task = () -> {
             portalService.handleIslandRemoved(islandId, location, uuid(event.getPlayerUUID()), uuid(island.getOwner()), members(island));
             npcService.handleIslandRemoved(islandId, location);
-            minionService.handleIslandRemoved(islandId, location);
         };
         if (location != null) {
             scheduler.runAt(location, task);

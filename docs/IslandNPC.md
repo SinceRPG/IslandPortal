@@ -396,53 +396,6 @@ npc-types:
 
 ---
 
-## Example: Minion Manager NPC
-
-This is only an NPC menu/action example. It does not create a minion system by itself.
-
-```yaml
-npc-types:
-  minion_manager:
-    entity-type: ALLAY
-    name: "<aqua>Minion Manager"
-    default-on-island: true
-    island-offset:
-      x: 0.5
-      y: 1.0
-      z: 4.5
-    spawn-search:
-      enabled: true
-      horizontal-radius: 8
-      vertical-radius: 6
-      step: 1
-    look-at-player:
-      enabled: true
-      radius: 8
-    movement:
-      enabled: true
-      radius: 2
-      interval-ticks: 30
-      step-distance: 0.25
-      target-attempts: 8
-    unlock:
-      default-unlocked: true
-      permissions: []
-      min-island-members: 0
-    interactions:
-      left-click:
-        messages:
-          - "<aqua>Minion Manager<gray>: <white>Right-click to manage island workers."
-        player-commands: []
-        console-commands: []
-      right-click:
-        messages: []
-        player-commands:
-          - "minions"
-        console-commands: []
-```
-
----
-
 ## Respawn Behavior
 
 IslandNPC automatically restores managed NPCs when:

@@ -29,8 +29,6 @@ By default, the main command is `/islandportal` and the alias is `/ip`.
 | `/ip remove` | Removes the nearest managed portal. |
 | `/ip npc spawn <type> [id]` | Spawns a managed NPC at your current location. |
 | `/ip npc remove` | Removes the nearest managed NPC. |
-| `/ip minion give <type> <player> [amount]` | Gives minion placement items to a player. |
-| `/ip minion remove` | Removes the nearest managed minion and drops its placement item. |
 
 ---
 
@@ -84,22 +82,3 @@ Fields:
 
 !!! note "Unlock timing"
     Unlock checks run when IslandPortal handles island creation. Permission-based unlocks require the owner or member to be online at that moment.
-
----
-
-## Minion Permissions
-
-Minion admin commands use:
-
-```text
-islandportal.admin
-```
-
-Minion ownership protection:
-
-- The owner can open, collect, fuel, upgrade, and pick up their minions.
-- Players with `islandportal.admin` can manage any minion.
-- Other players cannot manage the minion GUI or pick up minions.
-
-!!! note "Island-member permissions"
-    Minions allow the owner, saved island members, and `islandportal.admin`. Placement stores a stable island key for global island caps; deeper live permission checks can be added per island plugin only when the target API is called directly.

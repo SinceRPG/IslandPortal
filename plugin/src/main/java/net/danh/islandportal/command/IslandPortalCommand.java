@@ -11,10 +11,6 @@ import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import io.papermc.paper.plugin.lifecycle.event.registrar.ReloadableRegistrarEvent;
 import net.danh.islandportal.IslandPortal;
-import net.danh.islandportal.minion.config.MinionConfig;
-import net.danh.islandportal.minion.model.MinionFuel;
-import net.danh.islandportal.minion.model.MinionType;
-import net.danh.islandportal.minion.service.MinionService;
 import net.danh.islandportal.npc.config.IslandNpcConfig;
 import net.danh.islandportal.npc.model.NpcType;
 import net.danh.islandportal.npc.service.IslandNpcService;
@@ -38,17 +34,13 @@ public final class IslandPortalCommand {
     private final PortalService portalService;
     private final IslandNpcConfig npcConfig;
     private final IslandNpcService npcService;
-    private final MinionConfig minionConfig;
-    private final MinionService minionService;
 
-    public IslandPortalCommand(IslandPortal plugin, PortalConfig config, PortalService portalService, IslandNpcConfig npcConfig, IslandNpcService npcService, MinionConfig minionConfig, MinionService minionService) {
+    public IslandPortalCommand(IslandPortal plugin, PortalConfig config, PortalService portalService, IslandNpcConfig npcConfig, IslandNpcService npcService) {
         this.plugin = plugin;
         this.config = config;
         this.portalService = portalService;
         this.npcConfig = npcConfig;
         this.npcService = npcService;
-        this.minionConfig = minionConfig;
-        this.minionService = minionService;
     }
 
     public void register(ReloadableRegistrarEvent<Commands> event) {
@@ -86,38 +78,6 @@ public final class IslandPortalCommand {
                                                 .executes(this::spawnNpc))))
                         .then(Commands.literal("remove")
                                 .executes(this::removeNpc)))
-                .then(Commands.literal("minion")
-                        .then(Commands.literal("give")
-                                .then(Commands.argument("type", StringArgumentType.word())
-                                        .suggests(this::suggestMinionTypes)
-                                        .executes(this::giveMinionSelf)
-                                        .then(Commands.argument("player", StringArgumentType.word())
-                                                .suggests(this::suggestPlayers)
-                                                .executes(this::giveMinionPlayer)
-                                                .then(Commands.argument("amount", IntegerArgumentType.integer(1))
-                                                        .executes(this::giveMinionPlayer)))))
-                        .then(Commands.literal("fuel")
-                                .then(Commands.argument("fuel", StringArgumentType.word())
-                                        .suggests(this::suggestMinionFuels)
-                                        .executes(this::giveFuelSelf)
-                                        .then(Commands.argument("player", StringArgumentType.word())
-                                                .suggests(this::suggestPlayers)
-                                                .executes(this::giveFuelPlayer)
-                                                .then(Commands.argument("amount", IntegerArgumentType.integer(1))
-                                                        .executes(this::giveFuelPlayer)))))
-                        .then(Commands.literal("booster")
-                                .then(Commands.argument("fuel", StringArgumentType.word())
-                                        .suggests(this::suggestMinionFuels)
-                                        .executes(this::giveFuelSelf)
-                                        .then(Commands.argument("player", StringArgumentType.word())
-                                                .suggests(this::suggestPlayers)
-                                                .executes(this::giveFuelPlayer)
-                                                .then(Commands.argument("amount", IntegerArgumentType.integer(1))
-                                                        .executes(this::giveFuelPlayer)))))
-                        .then(Commands.literal("remove")
-                                .executes(this::removeMinion))
-                        .then(Commands.literal("inspect")
-                                .executes(this::inspectMinion)))
                 .then(Commands.literal("remove").executes(this::remove))
                 .executes(this::usage);
 
@@ -140,7 +100,6 @@ public final class IslandPortalCommand {
                 config.message("help.create"),
                 config.message("help.createisland"),
                 config.message("help.npc"),
-                config.message("help.minion"),
                 config.message("help.remove"),
                 config.message("help.pickup")
         )) {
@@ -283,100 +242,6 @@ public final class IslandPortalCommand {
         return removed ? Command.SINGLE_SUCCESS : 0;
     }
 
-    private int giveMinionSelf(CommandContext<CommandSourceStack> context) {
-        CommandSender sender = sender(context);
-        Player player = player(sender);
-        if (player == null) {
-            sender.sendMessage(config.message("players-only"));
-            return 0;
-        }
-        return giveMinion(context, player, 1);
-    }
-
-    private int giveMinionPlayer(CommandContext<CommandSourceStack> context) {
-        CommandSender sender = sender(context);
-        Player target = Bukkit.getPlayerExact(StringArgumentType.getString(context, "player"));
-        if (target == null) {
-            sender.sendMessage(config.message("player-not-found"));
-            return 0;
-        }
-        int amount = context.getNodes().stream().anyMatch(node -> node.getNode().getName().equals("amount"))
-                ? IntegerArgumentType.getInteger(context, "amount")
-                : 1;
-        return giveMinion(context, target, amount);
-    }
-
-    private int giveMinion(CommandContext<CommandSourceStack> context, Player target, int amount) {
-        CommandSender sender = sender(context);
-        MinionType type = minionConfig.type(StringArgumentType.getString(context, "type"));
-        if (type == null) {
-            sender.sendMessage(config.message("unknown-minion-type"));
-            return 0;
-        }
-        minionService.giveMinionItem(target, type, amount);
-        sender.sendMessage(config.message("minion-item-given").replace("%amount%", String.valueOf(amount)).replace("%type%", type.id()).replace("%player%", target.getName()));
-        return Command.SINGLE_SUCCESS;
-    }
-
-    private int giveFuelSelf(CommandContext<CommandSourceStack> context) {
-        CommandSender sender = sender(context);
-        Player player = player(sender);
-        if (player == null) {
-            sender.sendMessage(config.message("players-only"));
-            return 0;
-        }
-        return giveFuel(context, player, 1);
-    }
-
-    private int giveFuelPlayer(CommandContext<CommandSourceStack> context) {
-        CommandSender sender = sender(context);
-        Player target = Bukkit.getPlayerExact(StringArgumentType.getString(context, "player"));
-        if (target == null) {
-            sender.sendMessage(config.message("player-not-found"));
-            return 0;
-        }
-        int amount = context.getNodes().stream().anyMatch(node -> node.getNode().getName().equals("amount"))
-                ? IntegerArgumentType.getInteger(context, "amount")
-                : 1;
-        return giveFuel(context, target, amount);
-    }
-
-    private int giveFuel(CommandContext<CommandSourceStack> context, Player target, int amount) {
-        CommandSender sender = sender(context);
-        MinionFuel fuel = minionConfig.fuel(StringArgumentType.getString(context, "fuel"));
-        if (fuel == null) {
-            sender.sendMessage(config.message("unknown-minion-fuel"));
-            return 0;
-        }
-        minionService.giveFuelItem(target, fuel, amount);
-        sender.sendMessage(config.message("minion-fuel-given").replace("%amount%", String.valueOf(amount)).replace("%fuel%", fuel.id()).replace("%player%", target.getName()));
-        return Command.SINGLE_SUCCESS;
-    }
-
-    private int removeMinion(CommandContext<CommandSourceStack> context) {
-        CommandSender sender = sender(context);
-        Player player = player(sender);
-        if (player == null) {
-            sender.sendMessage(config.message("players-only"));
-            return 0;
-        }
-        boolean removed = minionService.removeNearest(player.getLocation(), 6, true);
-        sender.sendMessage(removed ? config.message("minion-removed") : config.message("minion-not-found"));
-        return removed ? Command.SINGLE_SUCCESS : 0;
-    }
-
-    private int inspectMinion(CommandContext<CommandSourceStack> context) {
-        CommandSender sender = sender(context);
-        Player player = player(sender);
-        if (player == null) {
-            sender.sendMessage(config.message("players-only"));
-            return 0;
-        }
-        boolean inspected = minionService.inspectNearest(player, 6);
-        sender.sendMessage(inspected ? config.message("minion-inspected") : config.message("minion-not-found"));
-        return inspected ? Command.SINGLE_SUCCESS : 0;
-    }
-
     private int usage(CommandContext<CommandSourceStack> context) {
         return help(context);
     }
@@ -406,26 +271,6 @@ public final class IslandPortalCommand {
         for (NpcType type : npcConfig.npcTypes()) {
             if (type.id().toLowerCase(Locale.ROOT).startsWith(prefix)) {
                 builder.suggest(type.id());
-            }
-        }
-        return builder.buildFuture();
-    }
-
-    private CompletableFuture<Suggestions> suggestMinionTypes(CommandContext<CommandSourceStack> context, SuggestionsBuilder builder) {
-        String prefix = builder.getRemainingLowerCase();
-        for (MinionType type : minionConfig.types()) {
-            if (type.id().toLowerCase(Locale.ROOT).startsWith(prefix)) {
-                builder.suggest(type.id());
-            }
-        }
-        return builder.buildFuture();
-    }
-
-    private CompletableFuture<Suggestions> suggestMinionFuels(CommandContext<CommandSourceStack> context, SuggestionsBuilder builder) {
-        String prefix = builder.getRemainingLowerCase();
-        for (MinionFuel fuel : minionConfig.fuels()) {
-            if (fuel.id().toLowerCase(Locale.ROOT).startsWith(prefix)) {
-                builder.suggest(fuel.id());
             }
         }
         return builder.buildFuture();

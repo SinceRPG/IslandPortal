@@ -21,7 +21,7 @@ All task dispatch goes through the abstract `PlatformScheduler`. This ensures th
 ## 🛡️ Thread Safety Models
 
 ### Entity Safety
-Player inventories, GUI interactions, message callbacks, portal cooldown changes, NPC look-at-player rotation, NPC movement, NPC removal, NPC respawn entity updates, minion display removal, and minion GUI operations are scheduled through entity-aware execution paths. This keeps entity-owned state confined to the correct scheduler.
+Player inventories, GUI interactions, message callbacks, portal cooldown changes, NPC look-at-player rotation, NPC movement, NPC removal, and NPC respawn entity updates are scheduled through entity-aware execution paths. This keeps entity-owned state confined to the correct scheduler.
 
 ### Block Safety
 Portal block placement, portal island generation, schematic pasting, and island cleanup are all scheduled through `runAtLoaded`. 
@@ -31,7 +31,4 @@ Furthermore, portal island placement explicitly **rejects candidates whose full 
 Portal teleport actions use the native `teleportAsync` API. Any failure messages are dispatched in the completion callback back through the player's entity scheduler.
 
 ### Storage Safety
-Portal, NPC, and minion state are held in fast concurrent maps. The autosave routines use dirty flags and preserve separate data sections when portal, NPC, and minion data share the same owner file.
-
-### Minion Production
-Minion production is timestamp-based. The production loop does not require constantly ticking every block around a minion. It calculates elapsed time, applies offline caps, respects storage limits, and writes dirty state only when production, fuel, upgrade, collection, or removal changes data.
+Portal and NPC state are held in fast concurrent maps. The autosave routines use dirty flags and preserve separate data sections when managed data shares the same owner file.

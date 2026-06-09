@@ -102,54 +102,6 @@ Check:
 
 ---
 
-## Minion Item Does Not Place
-
-Check:
-
-1. `minions.enabled` is `true`.
-2. The item was created by `/ip minion give`.
-3. The minion type still exists in `plugins/IslandPortal/minions/types/`.
-4. The clicked area has a safe stand location.
-5. The player has not reached `limits.max-per-owner`.
-
----
-
-## Minion Does Not Produce
-
-Check:
-
-1. The minion type has valid drops.
-2. The current tier has a valid `interval-seconds`.
-3. Storage is not full.
-4. If `requires-fuel: true`, fuel has been added through the GUI.
-5. `minions.tick-interval-ticks` is not extremely high.
-
----
-
-## Minion Storage Is Full
-
-Collect items through the GUI, increase tier storage, or raise `storage-limit` in the relevant file under `plugins/IslandPortal/minions/types/`.
-
----
-
-## Minion Display Entity Disappears
-
-The display entity should respawn automatically.
-
-Check:
-
-1. `minions.respawn-check-ticks` is not too high.
-2. The minion data still exists in `playerdata/`.
-3. The world is loaded.
-
----
-
-## Player Cannot Open a Minion
-
-Only the owner and players with `islandportal.admin` can manage a minion.
-
----
-
 ## Folia Region Warnings
 
 If you see region ownership warnings:

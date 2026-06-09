@@ -11,7 +11,6 @@ Main files:
 - `config.yml`: Runtime behavior, integrations, cooldowns, and scheduler loops.
 - `portals.yml`: Portal types, items, shapes, island placement, access policies, and actions.
 - `npcs.yml`: IslandNPC types, spawn behavior, movement, unlocks, and interactions.
-- `minions/`: Minion fuels and type files split into a folder for easier management.
 - `menus.yml`: Portal settings GUI.
 - `messages.yml`: Command and player-facing messages.
 
@@ -96,29 +95,6 @@ island-npcs:
   creation-delay-ticks: 60
 ```
 
-### Minion Runtime
-
-```yaml
-minions:
-  # Master switch for minion placement, production, GUI, and respawn handling.
-  enabled: true
-
-  # How often minions calculate production.
-  tick-interval-ticks: 20
-
-  # Autosaves dirty minion data every N minutes.
-  autosave-interval-minutes: 5
-
-  # How often missing/dead minion display entities are respawned.
-  respawn-check-ticks: 60
-
-  # Limits production operations per tick loop to protect large servers.
-  max-actions-per-tick: 250
-
-  # Safe placement scan radius if the clicked block is not valid.
-  place-radius: 4
-```
-
 ### Island Creation and Cleanup
 
 ```yaml
@@ -174,52 +150,6 @@ NPC types can configure:
 - Player commands and console commands.
 
 See [Island NPCs](IslandNPC.md) for the full reference and examples.
-
----
-
-## `minions/`
-
-Minion configuration is split into smaller files:
-
-```text
-plugins/IslandPortal/minions/
-  gui.yml
-  settings.yml
-  fuels.yml
-  types/
-    collector.yml
-    farmer.yml
-    feeder.yml
-    fisher.yml
-    generator.yml
-    lumberjack.yml
-    miner.yml
-    seller.yml
-    slayer.yml
-    spawner.yml
-    spawner-miner.yml
-```
-
-`fuels.yml` defines shared fuel and booster items.
-
-Each file inside `types/` can define one or more minion types.
-
-Minion types can configure:
-
-- Placement item material, name, lore, and custom model data.
-- Armor stand display name, head material, size, and glow.
-- Default and per-type display equipment.
-- Temporary target visuals, block crack frames, and farmer crop growth animation.
-- Per-owner limits.
-- Required fuel or optional fuel.
-- Offline production cap.
-- Drops.
-- Tier intervals.
-- Tier storage capacity.
-- Tier work area size with `action-size`, or global defaults through `runtime.action-area`.
-- Tier upgrade costs.
-
-See [Minions](Minions.md) for the full reference and examples.
 
 ---
 

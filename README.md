@@ -9,7 +9,6 @@ IslandPortal is a Paper/Folia island portal plugin for Skyblock servers. It crea
 - Configurable portal types, menu items, access policies, command metadata, cooldowns, autosave interval, and integration toggles.
 - In-memory portal state with periodic and shutdown persistence to `playerdata`.
 - Optional integrations with BentoBox, SuperiorSkyblock2, and Skyllia.
-- Minion system for automated island workers (Currently in BETA - use with caution).
 - Optional WorldEdit/FastAsyncWorldEdit schematic portal islands with generated-platform fallback.
 - GitHub Actions build validation and wiki markdown validation.
 
